@@ -268,7 +268,7 @@ FRONTEND_URL=http://localhost:3000     # Para CORS
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=test                 # Para LocalStack: 'test'
 AWS_SECRET_ACCESS_KEY=test             # Para LocalStack: 'test'
-AWS_ENDPOINT_URL=http://localstack:4566  # Solo para desarrollo local
+AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566  # Solo para desarrollo local
 
 # === SQS ===
 SQS_QUEUE_NAME=report-jobs

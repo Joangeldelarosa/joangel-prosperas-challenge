@@ -2,7 +2,7 @@
 # Initialize DynamoDB tables (for use outside Docker)
 set -euo pipefail
 
-ENDPOINT="${AWS_ENDPOINT_URL:-http://localhost:4566}"
+ENDPOINT="${AWS_ENDPOINT_URL:-http://localhost.localstack.cloud:4566}"
 REGION="${AWS_REGION:-us-east-1}"
 
 echo "Creating DynamoDB tables at $ENDPOINT..."

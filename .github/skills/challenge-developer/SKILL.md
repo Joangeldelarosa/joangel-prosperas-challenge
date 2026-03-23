@@ -457,8 +457,8 @@ const useJobs = (pollInterval = 5000) => {
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `docker compose up` hangs | LocalStack not ready | Add `depends_on` with healthcheck `curl localstack:4566/_localstack/health` |
-| Worker doesn't consume | Wrong SQS URL | Check `AWS_ENDPOINT_URL` in worker env, must point to `http://localstack:4566` |
+| `docker compose up` hangs | LocalStack not ready | Add `depends_on` with healthcheck `curl localhost.localstack.cloud:4566/_localstack/health` |
+| Worker doesn't consume | Wrong SQS URL | Check `AWS_ENDPOINT_URL` in worker env, must point to `http://localhost.localstack.cloud:4566` |
 | CORS errors | Missing middleware | Add `CORSMiddleware` in main.py with `allow_origins=[settings.frontend_url]` |
 | JWT decode fails | Clock skew in Docker | Use `datetime.now(timezone.utc)` consistently |
 | DynamoDB table not found | init-aws.sh didn't run | Check LocalStack logs, verify healthcheck |
