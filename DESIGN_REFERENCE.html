@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Precision Lab | Report Processing</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-high": "#e6e8ea",
+                        "primary-container": "#00174b",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary": "#000000",
+                        "secondary": "#505f76",
+                        "tertiary": "#000000",
+                        "on-surface-variant": "#45464d",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-primary-container": "#497cff",
+                        "error": "#ba1a1a",
+                        "background": "#f7f9fb",
+                        "on-secondary-container": "#54647a",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container": "#eceef0",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-fixed": "#00174b",
+                        "secondary-container": "#d0e1fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-low": "#f2f4f6",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-tint": "#0053db",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#76777d",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-surface": "#2d3133",
+                        "on-tertiary-container": "#009668",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#c6c6cd",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface": "#191c1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-tertiary-fixed": "#002113",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#002113",
+                        "on-background": "#191c1e"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- Main Content Area: Centered Container -->
+<main class="min-h-screen flex flex-col items-center">
+<!-- Simplified Header -->
+<header class="w-full max-w-6xl px-8 py-8 flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-black text-xl tracking-tighter text-black uppercase">Prosperas</span>
+<span class="text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase">Editorial Analytics</span>
+</div>
+<div class="flex items-center space-x-3">
+<div class="text-right">
+<p class="text-xs font-bold text-slate-900 leading-none">Alex Sterling</p>
+<p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Senior Analyst</p>
+</div>
+<img alt="User Profile" class="w-9 h-9 rounded-full object-cover border border-outline-variant/20" data-alt="Professional headshot of a man in a dark suit with clean lighting against a neutral grey studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIiqthJgatPpoog7wsIhUH4uLxpGY58vdh8wan5W5gBmyLD-XyRHswRRNwpUPbRCUxThpQu9PJ-nKhQM7HgndONqM9GQkSFeVZEaGgfQuOcVW87xioy9GQR_U6WzAhVT9ul7mMPizZVolHbudVCvrgD5Y0ZKkH3GhzwqWYYIdY_5zpI4SMvh9AnCeTbAxWXVAnh9J0TveqG_pfNykV6NK8v7DD4f4utXkvJ-eEsfgLxKhBIWZR56I_A__05kCFAsFORw8K_l8v0IY"/>
+</div>
+</header>
+<div class="w-full max-w-6xl px-8 pb-12">
+<!-- Central Dashboard Container -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_12px_32px_rgba(25,28,30,0.04)] grid grid-cols-1 lg:grid-cols-12 min-h-[700px] border border-outline-variant/10">
+<!-- Left: Request Form -->
+<div class="lg:col-span-5 p-10 border-r border-outline-variant/10 bg-surface-container-lowest">
+<div class="mb-10">
+<h2 class="text-2xl font-black tracking-tight text-primary mb-2">Request Report</h2>
+<p class="text-sm text-on-surface-variant leading-relaxed">Configure parameters to generate a custom analytical digest. Processes are handled asynchronously.</p>
+</div>
+<form class="space-y-8">
+<div class="space-y-2">
+<label class="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase">Report Type</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-primary transition-all">
+<option>Engagement Analytics</option>
+<option>Revenue Breakdown</option>
+<option>Growth Summary</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase">Date Range</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-primary transition-all" placeholder="MM/DD/YYYY - MM/DD/YYYY" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-2.5 text-slate-400 text-lg">calendar_today</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase">Format</label>
+<div class="grid grid-cols-3 gap-3">
+<label class="cursor-pointer">
+<input checked="" class="hidden peer" name="format" type="radio" value="pdf"/>
+<div class="py-3 text-center rounded-lg bg-surface-container-low text-xs font-bold peer-checked:bg-primary peer-checked:text-white transition-all uppercase tracking-widest">PDF</div>
+</label>
+<label class="cursor-pointer">
+<input class="hidden peer" name="format" type="radio" value="csv"/>
+<div class="py-3 text-center rounded-lg bg-surface-container-low text-xs font-bold peer-checked:bg-primary peer-checked:text-white transition-all uppercase tracking-widest">CSV</div>
+</label>
+<label class="cursor-pointer">
+<input class="hidden peer" name="format" type="radio" value="json"/>
+<div class="py-3 text-center rounded-lg bg-surface-container-low text-xs font-bold peer-checked:bg-primary peer-checked:text-white transition-all uppercase tracking-widest">JSON</div>
+</label>
+</div>
+</div>
+<button class="w-full mt-8 bg-gradient-to-br from-primary to-primary-container text-white py-4 rounded-lg font-bold text-xs uppercase tracking-[0.2em] shadow-lg hover:opacity-90 active:scale-[0.98] transition-all" type="submit">
+                            Generate Report
+                        </button>
+</form>
+<div class="mt-12 p-6 rounded-xl bg-surface-container">
+<div class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-surface-tint mt-0.5">info</span>
+<div>
+<p class="text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Queue Status</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Estimated processing time for large datasets is 4-6 minutes. You will receive a notification upon completion.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Jobs List -->
+<div class="lg:col-span-7 p-10 bg-surface">
+<div class="flex justify-between items-end mb-10">
+<div>
+<h2 class="text-xl font-black tracking-tight text-primary">Recent Jobs</h2>
+<p class="text-xs text-on-surface-variant mt-1">Live monitoring of processing requests</p>
+</div>
+<div class="flex items-center space-x-2 text-[10px] font-bold text-on-tertiary-container bg-tertiary-container/10 px-3 py-1.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+<span class="uppercase tracking-widest">Live Updates</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-4">
+<thead>
+<tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
+<th class="pb-2 px-4">Job ID</th>
+<th class="pb-2 px-4">Report Type</th>
+<th class="pb-2 px-4">Created</th>
+<th class="pb-2 px-4 text-center">Status</th>
+<th class="pb-2 px-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody>
+<!-- Row 1: COMPLETED -->
+<tr class="bg-surface-container-lowest group hover:shadow-md transition-shadow">
+<td class="py-5 px-4 rounded-l-xl text-xs font-mono font-bold text-slate-900">#1240</td>
+<td class="py-5 px-4">
+<p class="text-xs font-bold text-slate-900">Engagement Analytics</p>
+<p class="text-[10px] text-slate-400 uppercase tracking-tighter">PDF Format</p>
+</td>
+<td class="py-5 px-4 text-xs font-medium text-slate-500">12:42 PM</td>
+<td class="py-5 px-4 text-center">
+<span class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-on-tertiary-container">Completed</span>
+</td>
+<td class="py-5 px-4 rounded-r-xl text-right">
+<button class="text-[10px] font-black text-surface-tint uppercase tracking-widest hover:underline flex items-center justify-end ml-auto space-x-1">
+<span>Download</span>
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: PROCESSING -->
+<tr class="bg-surface-container-lowest group hover:shadow-md transition-shadow">
+<td class="py-5 px-4 rounded-l-xl text-xs font-mono font-bold text-slate-900">#1241</td>
+<td class="py-5 px-4">
+<p class="text-xs font-bold text-slate-900">Revenue Breakdown</p>
+<p class="text-[10px] text-slate-400 uppercase tracking-tighter">CSV Format</p>
+</td>
+<td class="py-5 px-4 text-xs font-medium text-slate-500">12:45 PM</td>
+<td class="py-5 px-4">
+<div class="flex flex-col items-center space-y-2">
+<span class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-secondary-container text-surface-tint">Processing</span>
+<div class="w-24 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-surface-tint w-[65%] rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="py-5 px-4 rounded-r-xl text-right">
+<button class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 flex items-center justify-end ml-auto space-x-1">
+<span>View Log</span>
+<span class="material-symbols-outlined text-sm">terminal</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: PENDING -->
+<tr class="bg-surface-container-lowest group hover:shadow-md transition-shadow">
+<td class="py-5 px-4 rounded-l-xl text-xs font-mono font-bold text-slate-900">#1242</td>
+<td class="py-5 px-4">
+<p class="text-xs font-bold text-slate-900">Growth Summary</p>
+<p class="text-[10px] text-slate-400 uppercase tracking-tighter">JSON Format</p>
+</td>
+<td class="py-5 px-4 text-xs font-medium text-slate-500">12:48 PM</td>
+<td class="py-5 px-4 text-center">
+<span class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-600">Pending</span>
+</td>
+<td class="py-5 px-4 rounded-r-xl text-right">
+<button class="text-[10px] font-black text-error uppercase tracking-widest hover:underline flex items-center justify-end ml-auto space-x-1">
+<span>Cancel</span>
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: FAILED -->
+<tr class="bg-surface-container-lowest group hover:shadow-md transition-shadow">
+<td class="py-5 px-4 rounded-l-xl text-xs font-mono font-bold text-slate-900">#1243</td>
+<td class="py-5 px-4">
+<p class="text-xs font-bold text-slate-900">Engagement Analytics</p>
+<p class="text-[10px] text-slate-400 uppercase tracking-tighter">PDF Format</p>
+</td>
+<td class="py-5 px-4 text-xs font-medium text-slate-500">12:50 PM</td>
+<td class="py-5 px-4 text-center">
+<span class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-error-container text-error">Failed</span>
+</td>
+<td class="py-5 px-4 rounded-r-xl text-right">
+<button class="text-[10px] font-black text-slate-900 uppercase tracking-widest hover:underline flex items-center justify-end ml-auto space-x-1">
+<span>Retry</span>
+<span class="material-symbols-outlined text-sm">refresh</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination-like Info -->
+<div class="mt-8 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+<span>Showing 4 of 48 total jobs</span>
+<div class="flex space-x-4">
+<button class="hover:text-black transition-colors">Previous</button>
+<button class="hover:text-black text-black transition-colors">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Summary Cards -->
+<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_4px_12px_rgba(25,28,30,0.02)] border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-tint">trending_up</span>
+</div>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-emerald-500/10 px-2 py-1 rounded">+12%</span>
+</div>
+<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Reports</h3>
+<p class="text-3xl font-black text-black tracking-tight">1,284</p>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_4px_12px_rgba(25,28,30,0.02)] border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-tint">speed</span>
+</div>
+<span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">Normal</span>
+</div>
+<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg. Processing</h3>
+<p class="text-3xl font-black text-black tracking-tight">4.2m</p>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_4px_12px_rgba(25,28,30,0.02)] border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-tint">storage</span>
+</div>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-emerald-500/10 px-2 py-1 rounded">Optimized</span>
+</div>
+<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Data Consumed</h3>
+<p class="text-3xl font-black text-black tracking-tight">8.4GB</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>
