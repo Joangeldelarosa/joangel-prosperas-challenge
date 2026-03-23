@@ -1,0 +1,13 @@
+# Example variable values — copy to terraform.tfvars and fill in real values
+# NEVER commit terraform.tfvars with real secrets
+
+aws_region      = "us-east-1"
+environment     = "production"
+project_name    = "prosperas"
+jwt_secret_key  = "CHANGE-ME-TO-A-REAL-SECRET"
+frontend_domain = ""
+
+api_container_cpu       = 256
+api_container_memory    = 512
+worker_container_cpu    = 256
+worker_container_memory = 512
