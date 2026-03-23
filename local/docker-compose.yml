@@ -1,0 +1,82 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,dynamodb,s3
+      - DEBUG=0
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - "./localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - "localstack_data:/var/lib/localstack"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - APP_PORT=8000
+      - FRONTEND_URL=http://localhost:3000
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - SQS_QUEUE_NAME=report-jobs
+      - SQS_DLQ_NAME=report-jobs-dlq
+      - SQS_MAX_RECEIVE_COUNT=3
+      - DYNAMODB_JOBS_TABLE=jobs
+      - DYNAMODB_USERS_TABLE=users
+      - S3_BUCKET_NAME=report-results
+      - JWT_SECRET_KEY=local-dev-secret-change-in-prod
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRATION_MINUTES=60
+    depends_on:
+      localstack:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    command: ["python", "-m", "app.worker"]
+    environment:
+      - APP_ENV=development
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - SQS_QUEUE_NAME=report-jobs
+      - SQS_DLQ_NAME=report-jobs-dlq
+      - DYNAMODB_JOBS_TABLE=jobs
+      - DYNAMODB_USERS_TABLE=users
+      - S3_BUCKET_NAME=report-results
+      - WORKER_CONCURRENCY=2
+      - WORKER_POLL_INTERVAL=5
+      - JWT_SECRET_KEY=local-dev-secret-change-in-prod
+    depends_on:
+      localstack:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  localstack_data:

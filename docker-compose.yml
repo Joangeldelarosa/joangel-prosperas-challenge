@@ -1,0 +1,4 @@
+# Root docker-compose — delegates to local/
+# Usage: docker compose up (from project root)
+include:
+  - local/docker-compose.yml
