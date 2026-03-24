@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from concurrent.futures import Future, ThreadPoolExecutor
 
 import boto3
@@ -60,7 +61,11 @@ class Consumer:
 
         try:
             while self._running:
-                self._poll()
+                try:
+                    self._poll()
+                except Exception:
+                    logger.exception("Polling iteration failed, retrying")
+                    time.sleep(2)
         finally:
             self._executor.shutdown(wait=True)
             logger.info("Consumer stopped")
@@ -83,9 +88,12 @@ class Consumer:
         """Poll SQS for messages, prioritizing the high-priority queue."""
         self._cleanup_finished()
 
+        if not self._ensure_queue_urls_ready():
+            time.sleep(2)
+            return
+
         available = settings.worker_concurrency - len(self._in_flight)
         if available <= 0:
-            import time
             time.sleep(1)
             return
 
@@ -96,6 +104,18 @@ class Consumer:
         remaining = available - dispatched
         if remaining > 0:
             self._poll_queue(self.queue_url, remaining, wait_seconds=settings.worker_poll_interval)
+
+    def _ensure_queue_urls_ready(self) -> bool:
+        """Resolve queue URLs, retrying in the main loop if queues are not ready yet."""
+        try:
+            _ = self.high_priority_queue_url
+            _ = self.queue_url
+            return True
+        except Exception as exc:
+            logger.warning("Queue URLs not ready yet: %s", exc)
+            self._queue_url = None
+            self._high_priority_queue_url = None
+            return False
 
     def _poll_queue(self, queue_url: str, max_messages: int, wait_seconds: int = 0) -> int:
         """Poll a specific queue and dispatch messages. Returns count dispatched."""

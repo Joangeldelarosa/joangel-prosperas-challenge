@@ -528,9 +528,12 @@ cp .env.example .env
 # 3. Levantar todo con un solo comando
 docker compose -f local/docker-compose.yml up --build
 
-# 4. Esperar a que todos los servicios estén healthy (~30s)
-#    LocalStack init-aws.sh crea automáticamente:
+# 4. Flujo de arranque determinista
+#    localstack -> aws-bootstrap -> backend/worker
+#    aws-bootstrap ejecuta init-aws.sh con /bin/sh (sin depender de permisos +x del host)
+#    init-aws.sh crea automáticamente (idempotente):
 #    - SQS: report-jobs + report-jobs-dlq (con redrive policy)
+#    - SQS: report-jobs-high + report-jobs-high-dlq (con redrive policy)
 #    - DynamoDB: jobs (GSI: user_id-index) + users (GSI: username-index)
 #    - S3: report-results
 
@@ -546,11 +549,15 @@ docker compose -f local/docker-compose.yml up --build
 graph LR
     subgraph Docker["docker-compose.yml"]
         LS["localstack :4566"]
+        INIT["aws-bootstrap one-shot"]
         BE["backend :8000"]
         WK["worker no port"]
         FE["frontend :3000"]
     end
 
+    LS --> INIT
+    INIT --> BE
+    INIT --> WK
     FE -->|"VITE_API_URL"| BE
     BE -->|"AWS_ENDPOINT_URL"| LS
     WK -->|"AWS_ENDPOINT_URL"| LS
@@ -566,6 +573,10 @@ graph LR
 aws --endpoint-url=http://localhost.localstack.cloud:4566 sqs list-queues
 aws --endpoint-url=http://localhost.localstack.cloud:4566 dynamodb list-tables
 aws --endpoint-url=http://localhost.localstack.cloud:4566 s3 ls
+
+# Verificar bootstrap y estabilidad del worker
+docker compose -f local/docker-compose.yml ps aws-bootstrap
+docker compose -f local/docker-compose.yml logs worker --tail=100
 
 # Registrar un usuario de prueba
 curl -X POST http://localhost:8000/api/auth/register \
@@ -908,9 +919,9 @@ joangel-prosperas-challenge/
 │   ├── outputs.tf                #   API URL (ALB), Frontend URL (S3), ECR URL
 │   └── terraform.tfvars.example  #   Valores de ejemplo (sin secrets)
 ├── local/                        # Desarrollo local
-│   ├── docker-compose.yml        #   Orquestación: localstack + backend + worker + frontend
+│   ├── docker-compose.yml        #   Orquestación: localstack + aws-bootstrap + backend + worker + frontend
 │   └── localstack/
-│       └── init-aws.sh           #   Crea SQS queues, DynamoDB tables, S3 bucket
+│       └── init-aws.sh           #   Crea SQS queues, DynamoDB tables, S3 bucket (idempotente)
 ├── scripts/                      # Utilidades
 │   ├── init-db.sh                #   Crear tablas DynamoDB manualmente
 │   ├── seed-data.sh              #   Insertar datos de prueba

@@ -108,6 +108,19 @@ class TestConsumerHandleMessage:
 
 
 class TestConsumerPollQueue:
+    def test_poll_skips_when_queue_urls_not_ready(self):
+        consumer = Consumer()
+        consumer._client = MagicMock()
+        consumer._client.get_queue_url.side_effect = Exception("QueueDoesNotExist")
+
+        from concurrent.futures import ThreadPoolExecutor
+        consumer._executor = ThreadPoolExecutor(max_workers=2)
+
+        consumer._poll()
+
+        consumer._client.receive_message.assert_not_called()
+        consumer._executor.shutdown(wait=False)
+
     def test_poll_queue_returns_zero_on_empty_response(self):
         consumer = Consumer()
         consumer._client = MagicMock()

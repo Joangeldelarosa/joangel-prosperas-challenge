@@ -123,11 +123,12 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Esto inicia **4 servicios** automáticamente:
+Esto inicia **5 servicios** automáticamente:
 
 | Servicio | Puerto | Descripción |
 |----------|--------|-------------|
-| **LocalStack** | `4566` | Emula SQS, DynamoDB y S3. Crea colas, tablas y bucket automáticamente al iniciar |
+| **LocalStack** | `4566` | Emula SQS, DynamoDB y S3 |
+| **aws-bootstrap** | — | Inicializa recursos AWS en LocalStack de forma idempotente y termina |
 | **Backend (API)** | `8000` | FastAPI con endpoints REST + WebSocket |
 | **Worker** | — | Consumidor SQS concurrente (misma imagen Docker, distinto entrypoint) |
 | **Frontend** | `3000` | React SPA servida por nginx |
@@ -137,13 +138,47 @@ Esto inicia **4 servicios** automáticamente:
 - API Docs (Swagger): http://localhost:8000/docs
 - Health Check: http://localhost:8000/health
 
-### ¿Qué se crea automáticamente en LocalStack?
+### Inicialización determinista en primer arranque
 
-El script `local/localstack/init-aws.sh` crea al iniciar:
+`aws-bootstrap` ejecuta `local/localstack/init-aws.sh` con `sh` (sin depender del bit ejecutable del host) y el script es idempotente. `backend` y `worker` arrancan **solo después** de que este bootstrap termina con éxito.
+
+Recursos creados automáticamente:
 
 - **4 colas SQS**: `report-jobs`, `report-jobs-dlq`, `report-jobs-high`, `report-jobs-high-dlq`
 - **2 tablas DynamoDB**: `jobs` (con GSI `user_id-index`), `users` (con GSI `username-index`)
 - **1 bucket S3**: `report-results`
+
+### Smoke check de primer arranque (clean machine)
+
+```bash
+# 1) Limpiar estado previo
+docker compose down -v --remove-orphans
+
+# 2) Levantar desde cero
+docker compose up --build
+```
+
+En otra terminal:
+
+```bash
+# 3) Verificar que bootstrap terminó correctamente
+docker compose ps aws-bootstrap
+
+# 4) Verificar recursos en LocalStack
+docker compose exec localstack awslocal sqs list-queues
+docker compose exec localstack awslocal dynamodb list-tables
+docker compose exec localstack awslocal s3 ls
+
+# 5) Verificar que worker sigue estable (sin QueueDoesNotExist loop)
+docker compose logs worker --tail=100
+```
+
+### Troubleshooting de primer arranque
+
+- Si ves `Permission denied: /etc/localstack/init/ready.d/init-aws.sh`, actualiza y recrea contenedores: `docker compose down -v && docker compose up --build`.
+- Si `aws-bootstrap` falla, revisar logs: `docker compose logs aws-bootstrap`.
+- Si LocalStack quedó en estado inconsistente, limpiar volumen: `docker volume rm joangel-prosperas-challenge_localstack_data` (o `docker compose down -v`).
+- Si `worker` inicia antes de recursos (muy raro), ahora reintenta resolución de colas en loop y no debe crash-loop.
 
 ### Comandos de Makefile
 
@@ -332,9 +367,9 @@ Los tests del frontend usan [Vitest](https://vitest.dev/) + [React Testing Libra
 │   ├── variables.tf            # Variables configurables
 │   └── outputs.tf              # URLs y ARNs de salida
 ├── local/
-│   ├── docker-compose.yml      # 4 servicios: localstack, backend, worker, frontend
+│   ├── docker-compose.yml      # 5 servicios: localstack, aws-bootstrap, backend, worker, frontend
 │   └── localstack/
-│       └── init-aws.sh         # Crea colas SQS, tablas DynamoDB, bucket S3
+│       └── init-aws.sh         # Bootstrap idempotente de colas, tablas y bucket
 ├── scripts/                    # Scripts de utilidad (init-db, seed-data, cleanup)
 ├── .github/workflows/
 │   ├── ci.yml                  # Lint + Test (push a main)
