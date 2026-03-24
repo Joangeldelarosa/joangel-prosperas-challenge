@@ -7,9 +7,9 @@ interface JobFormProps {
 }
 
 const REPORT_TYPES = [
-  { value: 'engagement_analytics', label: 'Engagement Analytics' },
-  { value: 'revenue_breakdown', label: 'Revenue Breakdown' },
-  { value: 'growth_summary', label: 'Growth Summary' },
+  { value: 'engagement_analytics', label: 'Analítica de Engagement' },
+  { value: 'revenue_breakdown', label: 'Desglose de Ingresos' },
+  { value: 'growth_summary', label: 'Resumen de Crecimiento' },
 ];
 
 const FORMATS = ['pdf', 'csv', 'json'] as const;
@@ -32,9 +32,9 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
   return (
     <div className="lg:col-span-5 p-10 border-r border-outline-variant/10 bg-surface-container-lowest">
       <div className="mb-10">
-        <h2 className="text-2xl font-black tracking-tight text-primary mb-2">Request Report</h2>
+        <h2 className="text-2xl font-black tracking-tight text-primary mb-2">Solicitar Reporte</h2>
         <p className="text-sm text-on-surface-variant leading-relaxed">
-          Configure parameters to generate a custom analytical digest. Processes are handled asynchronously.
+          Configura los parámetros para generar un análisis personalizado. Los procesos se manejan de forma asíncrona.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         {/* Report Type */}
         <div className="space-y-2">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase">
-            Report Type
+            Tipo de Reporte
           </label>
           <select
             value={reportType}
@@ -58,7 +58,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         {/* Date Range */}
         <div className="space-y-2">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase">
-            Date Range
+            Rango de Fechas
           </label>
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -79,7 +79,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         {/* Format */}
         <div className="space-y-2">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase">
-            Format
+            Formato
           </label>
           <div className="grid grid-cols-3 gap-3">
             {FORMATS.map((fmt) => (
@@ -105,7 +105,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
           disabled={loading}
           className="w-full mt-8 bg-gradient-to-br from-primary to-primary-container text-white py-4 rounded-lg font-bold text-xs uppercase tracking-[0.2em] shadow-lg hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
         >
-          {loading ? 'Submitting...' : 'Generate Report'}
+          {loading ? 'Enviando...' : 'Generar Reporte'}
         </button>
       </form>
 
@@ -114,9 +114,9 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         <div className="flex items-start space-x-3">
           <span className="material-symbols-outlined text-surface-tint mt-0.5">info</span>
           <div>
-            <p className="text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Queue Status</p>
+            <p className="text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Estado de la Cola</p>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Estimated processing time for large datasets is 4-6 minutes. You will receive a notification upon completion.
+              El tiempo estimado de procesamiento para conjuntos de datos grandes es de 4-6 minutos. Recibirás una notificación al completarse.
             </p>
           </div>
         </div>

@@ -23,7 +23,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
           </div>
           <span className="text-[10px] font-bold text-on-tertiary-container bg-emerald-500/10 px-2 py-1 rounded">+{completedCount}</span>
         </div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Reports</h3>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total de Reportes</h3>
         <p className="text-3xl font-black text-black tracking-tight">{total}</p>
       </div>
 
@@ -35,7 +35,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
           </div>
           <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">Normal</span>
         </div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg. Processing</h3>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tiempo Promedio</h3>
         <p className="text-3xl font-black text-black tracking-tight">{avgProcessing}</p>
       </div>
 
@@ -45,9 +45,9 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
           <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center">
             <span className="material-symbols-outlined text-surface-tint">storage</span>
           </div>
-          <span className="text-[10px] font-bold text-on-tertiary-container bg-emerald-500/10 px-2 py-1 rounded">Optimized</span>
+          <span className="text-[10px] font-bold text-on-tertiary-container bg-emerald-500/10 px-2 py-1 rounded">Optimizado</span>
         </div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Data Consumed</h3>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Datos Consumidos</h3>
         <p className="text-3xl font-black text-black tracking-tight">8.4GB</p>
       </div>
     </div>

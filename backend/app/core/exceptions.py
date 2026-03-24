@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 
-class AppException(Exception):
+class AppError(Exception):
     """Base exception for the application."""
 
     def __init__(self, status_code: int, detail: str):
@@ -10,22 +10,22 @@ class AppException(Exception):
         self.detail = detail
 
 
-class NotFoundException(AppException):
+class NotFoundError(AppError):
     def __init__(self, detail: str = "Resource not found"):
         super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-class ConflictException(AppException):
+class ConflictError(AppError):
     def __init__(self, detail: str = "Resource already exists"):
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
-class UnauthorizedException(AppException):
+class UnauthorizedError(AppError):
     def __init__(self, detail: str = "Invalid credentials"):
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
-class ValidationException(AppException):
+class ValidationError(AppError):
     def __init__(self, detail: str = "Validation error"):
         super().__init__(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
 
@@ -33,8 +33,8 @@ class ValidationException(AppException):
 def register_exception_handlers(app: FastAPI) -> None:
     """Register global exception handlers on the FastAPI app."""
 
-    @app.exception_handler(AppException)
-    async def app_exception_handler(_request: Request, exc: AppException) -> JSONResponse:
+    @app.exception_handler(AppError)
+    async def app_exception_handler(_request: Request, exc: AppError) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},

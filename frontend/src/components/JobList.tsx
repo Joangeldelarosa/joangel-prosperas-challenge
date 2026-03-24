@@ -30,12 +30,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
       {/* Header */}
       <div className="flex justify-between items-end mb-10">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-primary">Recent Jobs</h2>
-          <p className="text-xs text-on-surface-variant mt-1">Live monitoring of processing requests</p>
+          <h2 className="text-xl font-black tracking-tight text-primary">Trabajos Recientes</h2>
+          <p className="text-xs text-on-surface-variant mt-1">Monitoreo en vivo de solicitudes de procesamiento</p>
         </div>
         <div className="flex items-center space-x-2 text-[10px] font-bold text-on-tertiary-container bg-emerald-500/10 px-3 py-1.5 rounded-full">
           <span className="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse" />
-          <span className="uppercase tracking-widest">Live Updates</span>
+          <span className="uppercase tracking-widest">En Vivo</span>
         </div>
       </div>
 
@@ -44,18 +44,18 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
         {jobs.length === 0 ? (
           <div className="text-center py-16 text-on-surface-variant">
             <span className="material-symbols-outlined text-4xl mb-4 block opacity-30">assignment</span>
-            <p className="text-sm font-medium">No reports yet</p>
-            <p className="text-xs mt-1">Submit a report request to get started</p>
+            <p className="text-sm font-medium">Aún no hay reportes</p>
+            <p className="text-xs mt-1">Envía una solicitud de reporte para comenzar</p>
           </div>
         ) : (
           <table className="w-full text-left border-separate border-spacing-y-4">
             <thead>
               <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
-                <th className="pb-2 px-4">Job ID</th>
-                <th className="pb-2 px-4">Report Type</th>
-                <th className="pb-2 px-4">Created</th>
-                <th className="pb-2 px-4 text-center">Status</th>
-                <th className="pb-2 px-4 text-right">Actions</th>
+                <th className="pb-2 px-4">ID</th>
+                <th className="pb-2 px-4">Tipo de Reporte</th>
+                <th className="pb-2 px-4">Creado</th>
+                <th className="pb-2 px-4 text-center">Estado</th>
+                <th className="pb-2 px-4 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -67,7 +67,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                   <td className="py-5 px-4">
                     <p className="text-xs font-bold text-slate-900">{formatReportType(job.report_type)}</p>
                     <p className="text-[10px] text-slate-400 uppercase tracking-tighter">
-                      {(job.parameters.format || 'json').toUpperCase()} Format
+                      Formato {(job.parameters.format || 'json').toUpperCase()}
                     </p>
                   </td>
                   <td className="py-5 px-4 text-xs font-medium text-slate-500">
@@ -89,21 +89,21 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
       {/* Pagination */}
       {total > 0 && (
         <div className="mt-8 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          <span>Showing {jobs.length} of {total} total jobs</span>
+          <span>Mostrando {jobs.length} de {total} trabajos</span>
           <div className="flex space-x-4">
             <button
               onClick={onPrevPage}
               disabled={page <= 1}
               className="hover:text-black transition-colors disabled:opacity-30"
             >
-              Previous
+              Anterior
             </button>
             <button
               onClick={onNextPage}
               disabled={!hasNext}
               className="hover:text-black text-black transition-colors disabled:opacity-30 disabled:text-slate-400"
             >
-              Next
+              Siguiente
             </button>
           </div>
         </div>
@@ -122,28 +122,28 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
           rel="noopener noreferrer"
           className="text-[10px] font-black text-surface-tint uppercase tracking-widest hover:underline flex items-center justify-end ml-auto space-x-1"
         >
-          <span>Download</span>
+          <span>Descargar</span>
           <span className="material-symbols-outlined text-sm">download</span>
         </a>
       );
     case 'PROCESSING':
       return (
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
-          <span>View Log</span>
+          <span>Ver Log</span>
           <span className="material-symbols-outlined text-sm">terminal</span>
         </span>
       );
     case 'PENDING':
       return (
         <span className="text-[10px] font-black text-error uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
-          <span>Cancel</span>
+          <span>Cancelar</span>
           <span className="material-symbols-outlined text-sm">close</span>
         </span>
       );
     case 'FAILED':
       return (
         <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
-          <span>Retry</span>
+          <span>Reintentar</span>
           <span className="material-symbols-outlined text-sm">refresh</span>
         </span>
       );

@@ -10,22 +10,22 @@ const JobStatusBadge: React.FC<JobStatusBadgeProps> = ({ status }) => {
     COMPLETED: {
       bg: 'bg-emerald-500/10',
       text: 'text-on-tertiary-container',
-      label: 'Completed',
+      label: 'Completado',
     },
     PROCESSING: {
       bg: 'bg-secondary-container',
       text: 'text-surface-tint',
-      label: 'Processing',
+      label: 'Procesando',
     },
     PENDING: {
       bg: 'bg-amber-500/10',
       text: 'text-amber-600',
-      label: 'Pending',
+      label: 'Pendiente',
     },
     FAILED: {
       bg: 'bg-error-container',
       text: 'text-error',
-      label: 'Failed',
+      label: 'Fallido',
     },
   };
 

@@ -2,7 +2,6 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
-
 # === Auth Schemas ===
 
 class AuthRequest(BaseModel):

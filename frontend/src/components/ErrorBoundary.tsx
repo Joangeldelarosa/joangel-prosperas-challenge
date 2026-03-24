@@ -25,15 +25,15 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
         <div className="min-h-screen flex items-center justify-center bg-surface">
           <div className="bg-error-container p-8 rounded-xl max-w-md text-center">
             <span className="material-symbols-outlined text-error text-4xl mb-4">error</span>
-            <h2 className="text-lg font-black text-error mb-2">Something went wrong</h2>
+            <h2 className="text-lg font-black text-error mb-2">Algo salió mal</h2>
             <p className="text-sm text-on-surface-variant mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message || 'Ocurrió un error inesperado'}
             </p>
             <button
               onClick={() => window.location.reload()}
               className="px-6 py-2 bg-primary text-white rounded-lg text-xs font-bold uppercase tracking-widest"
             >
-              Reload Page
+              Recargar Página
             </button>
           </div>
         </div>

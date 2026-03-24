@@ -1,11 +1,10 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from boto3.dynamodb.conditions import Key
 
-from app.core.config import settings
 from app.core.database import get_jobs_table
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import NotFoundError
 from app.models.job import Job
 
 
@@ -27,7 +26,7 @@ class JobService:
         response = table.get_item(Key={"job_id": job_id})
         item = response.get("Item")
         if not item or item.get("user_id") != user_id:
-            raise NotFoundException("Job not found")
+            raise NotFoundError("Job not found")
         return Job.from_dict(item)
 
     def list_jobs(self, user_id: str, page: int = 1, per_page: int = 20) -> dict:
@@ -58,7 +57,7 @@ class JobService:
         update_expr = "SET #s = :status, updated_at = :updated_at"
         expr_values: dict = {
             ":status": status,
-            ":updated_at": datetime.now(timezone.utc).isoformat(),
+            ":updated_at": datetime.now(UTC).isoformat(),
         }
         expr_names = {"#s": "status"}
         if result_url is not None:

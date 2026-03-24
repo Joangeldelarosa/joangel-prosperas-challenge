@@ -24,7 +24,7 @@ export function useAuth() {
       localStorage.setItem('token', response.token);
       setAuthState({ token: response.token, userId: null, isAuthenticated: true });
     } catch (err: unknown) {
-      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Login failed';
+      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Error al iniciar sesión';
       setError(message);
       throw err;
     } finally {
@@ -41,7 +41,7 @@ export function useAuth() {
       localStorage.setItem('user_id', response.user_id);
       setAuthState({ token: response.token, userId: response.user_id, isAuthenticated: true });
     } catch (err: unknown) {
-      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Registration failed';
+      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Error al registrarse';
       setError(message);
       throw err;
     } finally {

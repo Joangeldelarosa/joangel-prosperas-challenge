@@ -5,7 +5,7 @@ import uuid
 from app.services.job_service import job_service
 from app.services.queue_service import queue_service
 from app.services.user_service import user_service
-from app.core.exceptions import NotFoundException, ConflictException, UnauthorizedException
+from app.core.exceptions import NotFoundError, ConflictError, UnauthorizedError
 
 import pytest
 
@@ -33,7 +33,7 @@ class TestJobService:
         assert retrieved.report_type == "revenue_breakdown"
 
     def test_get_job_not_found(self, test_user_id):
-        with pytest.raises(NotFoundException):
+        with pytest.raises(NotFoundError):
             job_service.get_job(job_id="nonexistent", user_id=test_user_id)
 
     def test_get_job_wrong_user(self, test_user_id):
@@ -42,7 +42,7 @@ class TestJobService:
             report_type="engagement_analytics",
             parameters={},
         )
-        with pytest.raises(NotFoundException):
+        with pytest.raises(NotFoundError):
             job_service.get_job(job_id=job.job_id, user_id="other-user")
 
     def test_list_jobs_empty(self, test_user_id):
@@ -126,7 +126,7 @@ class TestUserService:
 
     def test_register_duplicate_username(self):
         user_service.register("dupeuser", "securepass123")
-        with pytest.raises(ConflictException):
+        with pytest.raises(ConflictError):
             user_service.register("dupeuser", "anotherpass123")
 
     def test_authenticate_success(self):
@@ -136,9 +136,9 @@ class TestUserService:
 
     def test_authenticate_wrong_password(self):
         user_service.register("wrongpw", "correctpass123")
-        with pytest.raises(UnauthorizedException):
+        with pytest.raises(UnauthorizedError):
             user_service.authenticate("wrongpw", "wrongpass123")
 
     def test_authenticate_nonexistent_user(self):
-        with pytest.raises(UnauthorizedException):
+        with pytest.raises(UnauthorizedError):
             user_service.authenticate("nobody", "somepass123")

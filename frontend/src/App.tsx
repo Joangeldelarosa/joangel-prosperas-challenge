@@ -21,10 +21,10 @@ function Dashboard() {
     setSubmitLoading(true)
     try {
       await jobsApi.create(data)
-      setNotification({ message: 'Report queued successfully!', type: 'success' })
+      setNotification({ message: '¡Reporte enviado a la cola exitosamente!', type: 'success' })
       refresh()
     } catch {
-      setNotification({ message: 'Failed to create report. Please try again.', type: 'error' })
+      setNotification({ message: 'Error al crear el reporte. Inténtalo de nuevo.', type: 'error' })
     } finally {
       setSubmitLoading(false)
     }
