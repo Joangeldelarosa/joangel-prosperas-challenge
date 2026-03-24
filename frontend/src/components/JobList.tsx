@@ -44,7 +44,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="lg:col-span-7 p-4 sm:p-6 lg:p-10 bg-surface"
+      className="lg:col-span-7 p-4 sm:p-6 lg:p-6 bg-surface min-w-0 rounded-b-2xl lg:rounded-bl-none lg:rounded-tr-2xl lg:rounded-br-2xl"
     >
       {/* Header */}
       <div className="flex justify-between items-center sm:items-end mb-4 sm:mb-8">
@@ -136,16 +136,16 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
           </div>
 
           {/* ── Desktop Table View ── */}
-          <div className="hidden md:block">
+          <div className="hidden md:block overflow-visible">
             <table className="w-full text-left border-separate border-spacing-y-2" style={{ borderSpacing: '0 8px' }}>
               <thead>
                 <tr className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-[0.15em]">
-                  <th className="pb-3 pl-4 pr-3 w-[100px]">ID</th>
-                  <th className="pb-3 px-3">Tipo de Reporte</th>
-                  <th className="pb-3 px-3 w-[90px]">Prioridad</th>
-                  <th className="pb-3 px-3 w-[72px]">Creado</th>
-                  <th className="pb-3 px-3 w-[120px] text-center">Estado</th>
-                  <th className="pb-3 pl-3 pr-4 w-[110px] text-right">Acciones</th>
+                  <th className="pb-3 pl-4 pr-2 w-[80px]">ID</th>
+                  <th className="pb-3 px-2">Tipo de Reporte</th>
+                  <th className="pb-3 px-2 w-[80px]">Prioridad</th>
+                  <th className="pb-3 px-2 w-[64px]">Creado</th>
+                  <th className="pb-3 px-2 w-[110px] text-center">Estado</th>
+                  <th className="pb-3 pl-2 pr-4 w-[100px] text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,10 +161,10 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                       layout
                       className="bg-surface-container-lowest group hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-shadow duration-200"
                     >
-                      <td className="py-3.5 pl-4 pr-3 rounded-l-xl">
+                      <td className="py-3.5 pl-4 pr-2 rounded-l-xl">
                         <span className="text-xs font-mono font-bold text-on-surface/80">#{job.job_id.slice(0, 8)}</span>
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-3.5 px-2">
                         <p className="text-xs font-bold text-on-surface truncate">{reportTypeLabel(job.report_type)}</p>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
@@ -175,7 +175,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-3.5 px-2">
                         <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap ${
                           isHighPriority(job.report_type)
                             ? 'bg-amber-500/15 text-amber-600'
@@ -184,13 +184,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                           {isHighPriority(job.report_type) ? '⚡ Alta' : 'Estándar'}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-xs font-medium text-on-surface-variant whitespace-nowrap">
+                      <td className="py-3.5 px-2 text-xs font-medium text-on-surface-variant whitespace-nowrap">
                         {formatTime(job.created_at)}
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-3.5 px-2 text-center">
                         <JobStatusBadge status={job.status} />
                       </td>
-                      <td className="py-3.5 pl-3 pr-4 rounded-r-xl text-right">
+                      <td className="py-3.5 pl-2 pr-4 rounded-r-xl text-right">
                         <JobAction job={job} />
                       </td>
                     </motion.tr>

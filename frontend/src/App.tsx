@@ -45,7 +45,7 @@ function Dashboard({ logout }: { logout: () => void }) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-        className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.05)] grid grid-cols-1 lg:grid-cols-12 lg:min-h-[600px] border border-outline-variant/10"
+        className="bg-surface-container-lowest rounded-2xl overflow-visible shadow-[0_8px_40px_rgba(0,0,0,0.05)] grid grid-cols-1 lg:grid-cols-12 lg:min-h-[600px] border border-outline-variant/10"
       >
         <JobForm onSubmit={handleCreateJob} loading={submitLoading} />
         <JobList

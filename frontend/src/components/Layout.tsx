@@ -30,7 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children, username, onLogout }) => {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex justify-between items-center"
+        className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex justify-between items-center"
       >
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shadow-md">
@@ -97,7 +97,7 @@ const Layout: React.FC<LayoutProps> = ({ children, username, onLogout }) => {
       </motion.header>
 
       {/* Content */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 pb-6 sm:pb-12">
+      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 pb-6 sm:pb-12">
         {children}
       </div>
     </main>
