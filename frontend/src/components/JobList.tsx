@@ -138,15 +138,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
 
           {/* ── Desktop Table View ── */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-separate" style={{ borderSpacing: '0 8px' }}>
+            <table className="w-full text-left table-fixed border-separate" style={{ borderSpacing: '0 8px' }}>
               <thead>
                 <tr className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-[0.15em]">
-                  <th className="pb-3 pl-4 pr-2">ID</th>
-                  <th className="pb-3 px-2">Tipo de Reporte</th>
-                  <th className="pb-3 px-2">Prioridad</th>
-                  <th className="pb-3 px-2">Creado</th>
-                  <th className="pb-3 px-2 text-center">Estado</th>
-                  <th className="pb-3 pl-2 pr-4 text-right">Acciones</th>
+                  <th className="pb-3 pl-4 pr-2 w-[15%]">ID</th>
+                  <th className="pb-3 px-2 w-[30%]">Tipo de Reporte</th>
+                  <th className="pb-3 px-2 w-[13%]">Creado</th>
+                  <th className="pb-3 px-2 w-[22%] text-center">Estado</th>
+                  <th className="pb-3 pl-2 pr-4 w-[20%] text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -165,8 +164,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                       <td className="py-3.5 pl-4 pr-2 rounded-l-xl">
                         <span className="text-xs font-mono font-bold text-on-surface/80">#{job.job_id.slice(0, 8)}</span>
                       </td>
-                      <td className="py-3.5 px-2">
-                        <p className="text-xs font-bold text-on-surface truncate max-w-[140px]">{reportTypeLabel(job.report_type)}</p>
+                      <td className="py-3.5 px-2 overflow-hidden">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-bold text-on-surface truncate">{reportTypeLabel(job.report_type)}</p>
+                          {isHighPriority(job.report_type) && (
+                            <span className="shrink-0 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600">⚡</span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
                             {FORMAT_ICONS[job.parameters.format || 'json'] || 'description'}
@@ -175,15 +179,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                             {(job.parameters.format || 'json').toUpperCase()}
                           </span>
                         </div>
-                      </td>
-                      <td className="py-3.5 px-2">
-                        <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap ${
-                          isHighPriority(job.report_type)
-                            ? 'bg-amber-500/15 text-amber-600'
-                            : 'bg-surface-container-high/60 text-on-surface-variant/60'
-                        }`}>
-                          {isHighPriority(job.report_type) ? '⚡ Alta' : 'Estándar'}
-                        </span>
                       </td>
                       <td className="py-3.5 px-2 text-xs font-medium text-on-surface-variant whitespace-nowrap">
                         {formatTime(job.created_at)}

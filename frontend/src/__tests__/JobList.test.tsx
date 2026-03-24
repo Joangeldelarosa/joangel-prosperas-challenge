@@ -54,17 +54,15 @@ describe('JobList', () => {
     expect(screen.getAllByText('Pendiente')[0]).toBeInTheDocument()
   })
 
-  it('shows priority badges in the desktop table', () => {
+  it('shows high priority badges in the table and mobile cards', () => {
     const jobs = [
       mockJob({ status: 'COMPLETED', report_type: 'engagement_analytics' }),
       mockJob({ job_id: 'def12345-0000-0000-0000-000000000000', status: 'PENDING', report_type: 'revenue_breakdown' }),
     ]
     render(<JobList {...defaultProps} jobs={jobs} total={2} />)
 
-    // Standard priority badge appears in desktop table (and mobile card has no badge for standard)
-    expect(screen.getAllByText('Estándar').length).toBeGreaterThanOrEqual(1)
-    // High priority badge appears in both mobile card and desktop table
-    expect(screen.getAllByText('⚡ Alta').length).toBeGreaterThanOrEqual(2)
+    // High priority badge (⚡) appears in report type column and mobile card
+    expect(screen.getAllByText('⚡ Alta').length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders table headers', () => {
@@ -73,7 +71,6 @@ describe('JobList', () => {
 
     expect(screen.getByText('ID')).toBeInTheDocument()
     expect(screen.getByText('Tipo de Reporte')).toBeInTheDocument()
-    expect(screen.getByText('Prioridad')).toBeInTheDocument()
     expect(screen.getByText('Creado')).toBeInTheDocument()
     expect(screen.getByText('Estado')).toBeInTheDocument()
     expect(screen.getByText('Acciones')).toBeInTheDocument()
@@ -140,8 +137,8 @@ describe('JobList', () => {
 
     const verLogBtns = screen.getAllByText('Ver Log')
     await user.click(verLogBtns[0] as HTMLElement)
-    // "Estándar" appears in both the table priority column and the popover
-    expect(screen.getAllByText('Estándar').length).toBeGreaterThanOrEqual(2)
+    // "Estándar" appears in the popover priority badge
+    expect(screen.getAllByText('Estándar').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Prioridad Estándar', { exact: false })).toBeInTheDocument()
   })
 
