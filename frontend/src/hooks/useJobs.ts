@@ -55,9 +55,18 @@ export function useJobs() {
         try {
           const data = JSON.parse(event.data);
           if (data.type === 'job_update' && data.job) {
-            setJobs(prev => prev.map(j => 
-              j.job_id === data.job.job_id ? { ...j, ...data.job } : j
-            ));
+            const updatedJob = data.job as Job;
+            setJobs(prev => {
+              const idx = prev.findIndex(j => j.job_id === updatedJob.job_id);
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = { ...prev[idx]!, ...updatedJob };
+                return next;
+              }
+              // New job — prepend to list and bump total
+              setTotal(t => t + 1);
+              return [updatedJob, ...prev];
+            });
           }
         } catch {
           // Ignore malformed messages

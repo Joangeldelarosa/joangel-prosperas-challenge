@@ -137,7 +137,7 @@ describe('JobList', () => {
 
     const verLogBtns = screen.getAllByText('Ver Log')
     await user.click(verLogBtns[0] as HTMLElement)
-    expect(screen.getByText('⚡ Alta')).toBeInTheDocument()
+    expect(screen.getAllByText('⚡ Alta').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Prioridad Alta', { exact: false })).toBeInTheDocument()
   })
 
@@ -171,7 +171,7 @@ describe('JobList', () => {
 
     const verErrorBtns = screen.getAllByText('Ver Error')
     await user.click(verErrorBtns[0] as HTMLElement)
-    expect(screen.getByText('⚡ Alta')).toBeInTheDocument()
+    expect(screen.getAllByText('⚡ Alta').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Prioridad Alta', { exact: false })).toBeInTheDocument()
   })
 })

@@ -73,8 +73,13 @@ async def websocket_jobs(ws: WebSocket, token: str = Query(...)):
                     previous_status = last_known.get(job_id)
 
                     if previous_status is None:
-                        # First time seeing this job — track it
+                        # New job — send it so the frontend adds it to the list
                         last_known[job_id] = current_status
+                        await manager.send_job_update(ws, job_dict)
+                        logger.info(
+                            "Pushed new job_id=%s with status=%s",
+                            job_id, current_status,
+                        )
                     elif current_status != previous_status:
                         # Status changed — push update
                         last_known[job_id] = current_status

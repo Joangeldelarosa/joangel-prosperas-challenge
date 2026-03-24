@@ -22,7 +22,9 @@ function Dashboard({ logout }: { logout: () => void }) {
     try {
       await jobsApi.create(data)
       setNotification({ message: '¡Reporte enviado a la cola exitosamente!', type: 'success' })
+      // Immediate fetch + delayed retry for DynamoDB eventual consistency
       refresh()
+      setTimeout(() => refresh(), 1500)
     } catch {
       setNotification({ message: 'Error al crear el reporte. Inténtalo de nuevo.', type: 'error' })
     } finally {
