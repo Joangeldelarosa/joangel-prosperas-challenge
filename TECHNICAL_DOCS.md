@@ -116,8 +116,7 @@ graph TB
     end
 
     subgraph AWS_Cloud["AWS Cloud - us-east-1"]
-        CF["CloudFront CDN"]
-        S3_FE["S3 Frontend Build"]
+        S3_FE["S3 Static Website - Frontend"]
         ALB["Application Load Balancer"]
         API_Task["ECS Fargate - API Service"]
         Worker_Task["ECS Fargate - Worker Service"]
@@ -131,9 +130,8 @@ graph TB
         CW["CloudWatch Logs"]
     end
 
-    User -->|"HTTPS static"| CF
-    User -->|"HTTPS /api"| ALB
-    CF --> S3_FE
+    User -->|"HTTP static"| S3_FE
+    User -->|"HTTP /api"| ALB
     ALB --> API_Task
     API_Task --> SQS_P
     API_Task --> DDB
@@ -374,6 +372,12 @@ graph LR
         POST_JOB["POST /"]
         GET_JOB["GET /job_id"]
         LIST_JOBS["GET /"]
+        DL_JOB["GET /job_id/download"]
+    end
+
+    subgraph System["Sistema"]
+        HEALTH["GET /health"]
+        WS["WS /ws/jobs"]
     end
 
     subgraph Schemas["Request-Response Schemas"]
@@ -389,10 +393,12 @@ graph LR
     POST_JOB --> JobResp
     GET_JOB --> JobResp
     LIST_JOBS --> ListResp
+    DL_JOB -->|"302 Redirect"| JobResp
 
     style Auth fill:#fff3e0,stroke:#e65100
     style Jobs fill:#e8f5e9,stroke:#2e7d32
     style Schemas fill:#f3e5f5,stroke:#7b1fa2
+    style System fill:#e3f2fd,stroke:#1565c0
 ```
 
 ### 4.2 Detalle de Endpoints
@@ -404,6 +410,9 @@ graph LR
 | `POST` | `/api/jobs` | JWT | `{ report_type, date_range, format }` | — | `{ job_id, status }` | 201, 401, 422 |
 | `GET` | `/api/jobs/{job_id}` | JWT | — | — | `JobResponse` | 200, 401, 404 |
 | `GET` | `/api/jobs` | JWT | — | `page`, `per_page` | `JobListResponse` | 200, 401 |
+| `GET` | `/api/jobs/{job_id}/download` | JWT | — | — | Redirect 302 a URL pre-firmada S3 | 302, 401, 404 |
+| `GET` | `/health` | No | — | — | `{ status, dependencies, timestamp }` | 200 |
+| `WS` | `/ws/jobs?token=JWT` | JWT (query) | — | `token` | Push de actualizaciones de jobs | — |
 
 **Valores válidos:**
 - `report_type`: `engagement_analytics`, `revenue_breakdown`, `growth_summary`
@@ -420,9 +429,9 @@ graph LR
 | **SQS (Standard Queue)** | Cola de mensajes para desacoplar API de Workers | Fully managed, 1M requests/mes gratis, integración nativa con DLQ, visibility timeout para reintentos automáticos, ideal para job queues | RabbitMQ en EC2 (gestión manual), SNS (fan-out, no es job queue), EventBridge (orientado a eventos, no a jobs) |
 | **SQS (Dead Letter Queue)** | Capturar mensajes que fallan 3+ veces | Configuración declarativa de SQS (`maxReceiveCount`), sin código adicional, permite inspección manual | Tabla DynamoDB de fallos (más código, menos integrado, sin re-drive) |
 | **DynamoDB** | Persistencia de jobs y usuarios | Serverless, 0 gestión, free tier 25 GB + 25 WCU/RCU, modelo key-value ideal para jobs, GSI para queries eficientes | RDS PostgreSQL (instancia 24/7, mayor costo), Aurora Serverless (más complejo de configurar para este scope) |
-| **S3** | Almacenamiento de reportes generados | Barato, escalable, URLs pre-firmadas para descarga segura, integración con CloudFront | EFS (overkill para archivos estáticos), DynamoDB (límite 400 KB por item) |
+| **S3** | Almacenamiento de reportes generados | Barato, escalable, URLs pre-firmadas para descarga segura | EFS (overkill para archivos estáticos), DynamoDB (límite 400 KB por item) |
 | **ECS Fargate** | Compute para API y Workers en containers | Containerizado (Docker requerido), sin gestión de servidores, escala API y Workers de forma independiente, sin límite de tiempo de ejecución | Lambda (límite 15 min, cold starts), EC2 (gestión manual de instancias), App Runner (menos control de networking) |
-| **CloudFront + S3** | Hosting del frontend React | CDN global, HTTPS automático, caché de assets estáticos, costo bajo | Amplify (más opaco), ECS para estáticos (overkill) |
+| **S3 Static Website** | Hosting del frontend React | Hosting de archivos estáticos sin servidor, bajo costo, SPA fallback con error document, integración con Terraform | Amplify (más opaco), ECS para estáticos (overkill), CloudFront (requiere verificación de cuenta adicional) |
 | **ECR** | Registro de imágenes Docker | Integración nativa con ECS, 500 MB gratis, necesario para CI/CD | Docker Hub (rate limits, mayor latencia) |
 | **ALB** | Load Balancer para la API | Health checks, HTTPS termination, distribución de tráfico a tareas ECS | API Gateway (costo por request, más complejo para containers) |
 | **CloudWatch** | Logs y monitoreo | Incluido, integración nativa con ECS/SQS, soporte para métricas custom | Datadog/New Relic (costo adicional, overkill para esta prueba) |
@@ -616,10 +625,9 @@ graph TD
         NPMLint["npm run lint"]
     end
 
-    subgraph Build["Stage 2 - Build"]
+    subgraph Build["Stage 2 - Build & Push"]
         DockerBE["docker build backend"]
-        DockerFE["docker build frontend"]
-        PushECR["Push images to ECR"]
+        PushECR["Push image to ECR"]
     end
 
     subgraph Infra["Stage 3 - Infrastructure"]
@@ -630,13 +638,12 @@ graph TD
 
     subgraph Deploy["Stage 4 - Deploy"]
         UpdateECS["Update ECS services"]
+        BuildFE["npm build frontend"]
         DeployFE["S3 sync frontend"]
-        InvalidateCF["CloudFront invalidation"]
     end
 
     subgraph Verify["Stage 5 - Verify"]
         HealthCheck["Health check API"]
-        SmokeTest["Smoke test register"]
     end
 
     Trigger --> Checkout
@@ -646,18 +653,16 @@ graph TD
     SetupNode --> NPMTest
     SetupNode --> NPMLint
     PyTest --> DockerBE
-    NPMTest --> DockerFE
-    NPMLint --> DockerFE
+    NPMTest --> DockerBE
+    NPMLint --> DockerBE
     DockerBE --> PushECR
-    DockerFE --> PushECR
     PushECR --> TFInit
     TFInit --> TFPlan --> TFApply
     TFApply --> UpdateECS
-    TFApply --> DeployFE
-    UpdateECS --> InvalidateCF
-    DeployFE --> InvalidateCF
-    InvalidateCF --> HealthCheck
-    HealthCheck --> SmokeTest
+    TFApply --> BuildFE
+    BuildFE --> DeployFE
+    UpdateECS --> HealthCheck
+    DeployFE --> HealthCheck
 
     style Test fill:#e8f5e9,stroke:#2e7d32
     style Build fill:#e3f2fd,stroke:#1565c0
@@ -679,6 +684,7 @@ graph TD
 - **Test primero**: No se hace deploy si algún test o lint falla — fail-fast garantizado
 - **Build con Docker**: La misma imagen que pasa CI es la que corre en producción — elimina "works on my machine"
 - **IaC en el pipeline**: Terraform `apply` en cada push asegura que la infra está siempre sincronizada con el código
+- **Frontend dinámico**: El frontend se construye después de Terraform, usando la `api_url` del output como `VITE_API_URL` — sin secrets manuales para la URL de la API
 - **Verificación post-deploy**: Health check automático confirma que la aplicación responde después del deploy
 
 ---
@@ -694,7 +700,7 @@ Todas las variables se definen en `.env.example` con valores de desarrollo. En p
 | **App** | | | |
 | `APP_ENV` | Ambiente de ejecución. Controla nivel de logging y modo de errores | `development` | `production` |
 | `APP_PORT` | Puerto donde escucha uvicorn | `8000` | `8000` |
-| `FRONTEND_URL` | URL del frontend — usada para configurar CORS `allow_origins` | `http://localhost:3000` | `https://app.example.com` |
+| `FRONTEND_URL` | URL del frontend — usada para configurar CORS `allow_origins` | `http://localhost:3000` | `http://{s3-website-url}` |
 | **AWS** | | | |
 | `AWS_REGION` | Región AWS para todos los servicios | `us-east-1` | `us-east-1` |
 | `AWS_ACCESS_KEY_ID` | Credencial AWS — en dev es placeholder para LocalStack | `test` | *GitHub Secret* |
@@ -724,7 +730,7 @@ Todas las variables se definen en `.env.example` con valores de desarrollo. En p
 | **S3** | | | |
 | `S3_BUCKET_NAME` | Bucket donde se almacenan los reportes generados | `report-results` | `report-results` |
 | **Frontend** | | | |
-| `VITE_API_URL` | URL base de la API usada por Axios en el frontend | `http://localhost:8000` | `https://api.example.com` |
+| `VITE_API_URL` | URL base de la API usada por Axios en el frontend | `http://localhost:8000` | `http://{alb-dns-name}` (inyectada desde Terraform output) |
 
 ### 9.2 Detección de entorno
 
@@ -878,6 +884,8 @@ joangel-prosperas-challenge/
 │   │   ├── hooks/
 │   │   │   ├── useAuth.ts        #   Login/register/logout con localStorage
 │   │   │   └── useJobs.ts        #   WebSocket push + REST fallback
+│   │   ├── utils/
+│   │   │   └── labels.ts         #   Labels en español + detección de prioridad
 │   │   └── services/
 │   │       └── api.ts            #   Axios + JWT interceptor
 │   ├── Dockerfile                # Multi-stage (node:18-alpine → nginx:alpine)
@@ -887,18 +895,17 @@ joangel-prosperas-challenge/
 │   ├── vite.config.ts            # Vite config
 │   └── tsconfig.json             # TypeScript strict mode
 ├── infra/                        # Terraform para AWS producción
-│   ├── main.tf                   #   Provider AWS + backend config
+│   ├── main.tf                   #   Provider AWS + backend S3 state
 │   ├── vpc.tf                    #   VPC, subnets, IGW, route tables, security groups
 │   ├── ecs.tf                    #   ECS cluster, task definitions, services (API + Worker)
 │   ├── alb.tf                    #   Application Load Balancer + target group
 │   ├── dynamodb.tf               #   Tables: jobs (GSI user_id-index), users (GSI username-index)
-│   ├── sqs.tf                    #   Standard queue + DLQ con redrive policy
-│   ├── s3.tf                     #   Buckets: reports + frontend (con OAC policy)
-│   ├── cloudfront.tf             #   CDN distribution con SPA fallback
-│   ├── ecr.tf                    #   Docker registries con lifecycle policy
+│   ├── sqs.tf                    #   4 colas: standard + DLQ, high-priority + DLQ
+│   ├── s3.tf                     #   Buckets: reports + frontend (static website hosting)
+│   ├── ecr.tf                    #   Data source referenciando repositorio ECR pre-creado
 │   ├── iam.tf                    #   Task execution + task roles (least privilege)
 │   ├── variables.tf              #   Input variables
-│   ├── outputs.tf                #   API URL, CloudFront URL, ECR URLs
+│   ├── outputs.tf                #   API URL (ALB), Frontend URL (S3), ECR URL
 │   └── terraform.tfvars.example  #   Valores de ejemplo (sin secrets)
 ├── local/                        # Desarrollo local
 │   ├── docker-compose.yml        #   Orquestación: localstack + backend + worker + frontend
@@ -907,11 +914,13 @@ joangel-prosperas-challenge/
 ├── scripts/                      # Utilidades
 │   ├── init-db.sh                #   Crear tablas DynamoDB manualmente
 │   ├── seed-data.sh              #   Insertar datos de prueba
-│   └── deploy.sh                 #   Deploy manual helper
+│   ├── deploy.sh                 #   Deploy manual helper
+│   ├── cleanup-aws.sh            #   Limpieza de recursos AWS (bash)
+│   └── cleanup-aws.ps1           #   Limpieza de recursos AWS (PowerShell)
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml                #   Lint + Test on push (reutilizable)
-│       └── deploy.yml            #   Full deploy: CI → ECR → Terraform → ECS → S3/CF
+│       └── deploy.yml            #   Full deploy: CI → ECR → Terraform → ECS → S3
 ├── .env.example                  # Variables de entorno con valores de desarrollo
 ├── .gitignore                    # Python, Node, Terraform, env files
 ├── Makefile                      # Comandos: make dev, test, lint, clean
