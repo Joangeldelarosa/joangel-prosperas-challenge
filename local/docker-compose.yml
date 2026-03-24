@@ -7,11 +7,12 @@ services:
       - SERVICES=sqs,dynamodb,s3
       - DEBUG=0
       - AWS_DEFAULT_REGION=us-east-1
+      - LOCALSTACK_ACKNOWLEDGE_ACCOUNT_REQUIREMENT=1
     volumes:
       - "./localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
       - "localstack_data:/var/lib/localstack"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost.localstack.cloud:4566/_localstack/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -29,7 +30,7 @@ services:
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566
+      - AWS_ENDPOINT_URL=http://localstack:4566
       - SQS_QUEUE_NAME=report-jobs
       - SQS_DLQ_NAME=report-jobs-dlq
       - SQS_MAX_RECEIVE_COUNT=3
@@ -54,7 +55,7 @@ services:
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566
+      - AWS_ENDPOINT_URL=http://localstack:4566
       - SQS_QUEUE_NAME=report-jobs
       - SQS_DLQ_NAME=report-jobs-dlq
       - DYNAMODB_JOBS_TABLE=jobs

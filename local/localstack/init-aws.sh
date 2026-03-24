@@ -8,7 +8,7 @@ echo " Initializing AWS resources in LocalStack"
 echo "============================================"
 
 REGION="us-east-1"
-ENDPOINT="http://localhost.localstack.cloud:4566"
+ENDPOINT="http://localhost:4566"
 
 # --- SQS ---
 echo "[SQS] Creating Dead Letter Queue..."
