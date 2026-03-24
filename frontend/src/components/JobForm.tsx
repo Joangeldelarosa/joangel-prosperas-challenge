@@ -74,21 +74,23 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
             <span className="material-symbols-outlined text-[14px]">date_range</span>
             Rango de Fechas
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="min-w-0">
+              <span className="block text-[9px] font-bold text-on-surface-variant/50 uppercase tracking-wider mb-1">Desde</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-surface-container-low border border-transparent rounded-xl py-3.5 px-4 text-sm font-medium focus:ring-2 focus:ring-surface-tint/30 focus:border-surface-tint transition-all duration-200 outline-none"
+                className="w-full bg-surface-container-low border border-transparent rounded-xl py-3 sm:py-3.5 px-2.5 sm:px-4 text-sm font-medium focus:ring-2 focus:ring-surface-tint/30 focus:border-surface-tint transition-all duration-200 outline-none"
               />
             </div>
-            <div className="relative">
+            <div className="min-w-0">
+              <span className="block text-[9px] font-bold text-on-surface-variant/50 uppercase tracking-wider mb-1">Hasta</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-surface-container-low border border-transparent rounded-xl py-3.5 px-4 text-sm font-medium focus:ring-2 focus:ring-surface-tint/30 focus:border-surface-tint transition-all duration-200 outline-none"
+                className="w-full bg-surface-container-low border border-transparent rounded-xl py-3 sm:py-3.5 px-2.5 sm:px-4 text-sm font-medium focus:ring-2 focus:ring-surface-tint/30 focus:border-surface-tint transition-all duration-200 outline-none"
               />
             </div>
           </div>

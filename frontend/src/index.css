@@ -19,12 +19,17 @@
     min-height: 2.75rem;
   }
 
-  /* Prevent iOS zoom on input focus */
+  /* Prevent iOS zoom on input focus — !important overrides Tailwind text-sm (14px) */
   @supports (-webkit-touch-callout: none) {
     input,
     select,
     textarea {
-      font-size: 16px;
+      font-size: 16px !important;
     }
+  }
+
+  /* Disable touch-based zoom gestures globally */
+  html {
+    touch-action: manipulation;
   }
 }
