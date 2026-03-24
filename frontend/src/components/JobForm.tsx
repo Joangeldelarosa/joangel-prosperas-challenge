@@ -36,7 +36,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="lg:col-span-5 p-4 sm:p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-outline-variant/10 bg-surface-container-lowest rounded-t-2xl lg:rounded-tr-none lg:rounded-bl-none lg:rounded-l-2xl"
+      className="lg:col-span-5 p-4 sm:p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-outline-variant/10 bg-surface-container-lowest"
     >
       <div className="mb-5 sm:mb-8">
         <div className="flex items-center gap-2.5 mb-2">
