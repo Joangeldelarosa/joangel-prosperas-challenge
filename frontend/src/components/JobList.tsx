@@ -167,7 +167,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                         <div className="flex items-center gap-1.5">
                           <p className="text-xs font-bold text-on-surface truncate">{reportTypeLabel(job.report_type)}</p>
                           {isHighPriority(job.report_type) && (
-                            <span className="shrink-0 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600" aria-label="Alta prioridad">⚡</span>
+                            <span className="shrink-0 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600" role="img" aria-label="Alta prioridad">⚡</span>
                           )}
                         </div>
                         <div className="flex items-center gap-1 mt-0.5">
