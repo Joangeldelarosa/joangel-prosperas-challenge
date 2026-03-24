@@ -102,6 +102,10 @@ jobs:
         working-directory: infra
         run: terraform init
 
+      - name: Import pre-created ECR repository
+        working-directory: infra
+        run: terraform import aws_ecr_repository.api prosperas-api 2>/dev/null || true
+
       - name: Terraform Plan
         working-directory: infra
         run: terraform plan -var="jwt_secret_key=${{ secrets.JWT_SECRET_KEY }}" -out=tfplan
