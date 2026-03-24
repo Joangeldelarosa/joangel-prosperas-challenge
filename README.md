@@ -5,7 +5,8 @@
 
 > Sistema de procesamiento asíncrono de reportes construido con FastAPI, React, y servicios AWS (SQS, DynamoDB, S3, ECS Fargate).
 
-**Producción**: <!-- URL_PRODUCCION --> *(se actualiza tras el primer deploy)*
+**Frontend**: http://prosperas-frontend-026818612421.s3-website-us-east-1.amazonaws.com
+**API**: http://prosperas-api-alb-358203692.us-east-1.elb.amazonaws.com
 
 ---
 
@@ -27,7 +28,7 @@ Browser → React SPA → FastAPI API → SQS Queue → Worker → DynamoDB / S3
 | **Storage** | AWS S3 (generated reports) |
 | **Auth** | JWT (HS256) with bcrypt password hashing |
 | **Local Dev** | Docker Compose + LocalStack |
-| **IaC** | Terraform (ECS Fargate, ALB, CloudFront, VPC) |
+| **IaC** | Terraform (ECS Fargate, ALB, S3 Website, VPC) |
 | **CI/CD** | GitHub Actions |
 
 ---
@@ -106,7 +107,7 @@ make clean          # Clean build artifacts
 │   │   ├── hooks/         # Custom hooks (useAuth, useJobs)
 │   │   └── services/      # API client (Axios + JWT interceptor)
 │   └── Dockerfile
-├── infra/                 # Terraform (VPC, ECS, ALB, S3, CloudFront)
+├── infra/                 # Terraform (VPC, ECS, ALB, S3, SQS, DynamoDB)
 ├── local/                 # Docker Compose + LocalStack config
 ├── scripts/               # Utility scripts (init-db, seed-data)
 ├── .github/workflows/     # CI/CD pipelines
@@ -135,7 +136,7 @@ Tests use [moto](https://github.com/getmoto/moto) to mock AWS services — no ru
 | Workflow | Trigger | Stages |
 |----------|---------|--------|
 | `ci.yml` | Push to `main` | Lint (ruff + eslint) → Test (pytest + vitest) |
-| `deploy.yml` | Push to `main` | CI → Build & Push ECR → Terraform Apply → Deploy ECS → Deploy Frontend (S3 + CloudFront) → Health Check |
+| `deploy.yml` | Push to `main` | CI → Build & Push ECR → Terraform Apply → Deploy ECS → Deploy Frontend (S3) → Health Check |
 
 ### ¿Por qué este diseño?
 
@@ -145,7 +146,7 @@ Se separaron **dos workflows** para mantener feedback rápido y deploy seguro:
 - **`deploy.yml` secuencial con dependencias**: Cada stage depende del anterior (CI → ECR → Terraform → ECS → Frontend → Health Check). Si cualquier paso falla, el pipeline se detiene. Esto da rollback implícito — la versión anterior sigue corriendo en ECS hasta que el nuevo deploy pase el health check.
 - **Terraform como IaC** en el pipeline: La infraestructura se versiona junto al código. Un `terraform plan` en CI muestra drift antes de aplicar cambios, reduciendo errores humanos.
 - **Health check final**: Después de desplegar, el pipeline verifica `GET /health` en la URL pública. Si el endpoint no responde 200, el deploy se marca como fallido y se investiga — el servicio anterior sigue activo gracias a ECS rolling deployment.
-- **Frontend separado del backend**: El frontend se construye como archivos estáticos (Vite build) y se sube a S3 + CloudFront. Esto desacopla los ciclos de deploy y permite invalidar cache de CDN sin tocar ECS.
+- **Frontend separado del backend**: El frontend se construye como archivos estáticos (Vite build) y se sube a S3 static website hosting. Esto desacopla los ciclos de deploy del backend.
 
 ### Required GitHub Secrets
 
@@ -168,8 +169,8 @@ All infrastructure is defined in `infra/` as Terraform HCL:
 - **DynamoDB** tables (jobs + users) with GSIs
 - **SQS** queues (standard + DLQ with redrive policy)
 - **S3** buckets (reports + frontend static files)
-- **CloudFront** distribution for frontend with OAC
-- **ECR** repositories with lifecycle policies
+- **S3** static website hosting for frontend
+- **ECR** repository for API Docker image
 - **IAM** roles with least-privilege policies
 - **CloudWatch** log groups for container logs
 
