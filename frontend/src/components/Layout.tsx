@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart3, LogOut } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,11 +31,11 @@ const Layout: React.FC<LayoutProps> = ({ children, username, onLogout }) => {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex justify-between items-center"
+        className="w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex justify-between items-center"
       >
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shadow-md">
-            <span className="material-symbols-outlined text-white text-[16px] sm:text-[18px]">analytics</span>
+            <BarChart3 className="text-white w-4 h-4 sm:w-[18px] sm:h-[18px]" />
           </div>
           <div className="flex flex-col">
             <span className="font-black text-base sm:text-lg tracking-tighter text-black uppercase leading-none">Prosperas</span>
@@ -85,7 +86,7 @@ const Layout: React.FC<LayoutProps> = ({ children, username, onLogout }) => {
                       onClick={() => { setShowMobileMenu(false); onLogout?.(); }}
                       className="mt-2 w-full flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium text-error hover:bg-error-container/50 transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[16px]">logout</span>
+                      <LogOut className="w-4 h-4" />
                       Cerrar Sesión
                     </button>
                   </motion.div>
@@ -97,7 +98,7 @@ const Layout: React.FC<LayoutProps> = ({ children, username, onLogout }) => {
       </motion.header>
 
       {/* Content */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 pb-6 sm:pb-12">
+      <div className="w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 pb-6 sm:pb-12">
         {children}
       </div>
     </main>

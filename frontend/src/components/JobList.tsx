@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, ClipboardList, FileText, FileSpreadsheet, Braces, Download, Terminal, Clock, AlertCircle, Info } from 'lucide-react';
 import type { Job } from '../types';
 import JobStatusBadge from './JobStatusBadge';
 import { jobsApi } from '../services/api';
@@ -24,10 +25,10 @@ const formatTime = (isoString: string): string => {
   }
 };
 
-const FORMAT_ICONS: Record<string, string> = {
-  pdf: 'picture_as_pdf',
-  csv: 'table_chart',
-  json: 'data_object',
+const FORMAT_ICONS: Record<string, React.ReactNode> = {
+  pdf: <FileText className="w-3 h-3 text-on-surface-variant/50" />,
+  csv: <FileSpreadsheet className="w-3 h-3 text-on-surface-variant/50" />,
+  json: <Braces className="w-3 h-3 text-on-surface-variant/50" />,
 };
 
 const rowVariants = {
@@ -45,14 +46,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="lg:col-span-7 p-4 sm:p-6 lg:p-8 bg-surface min-w-0"
+      className="lg:col-span-8 p-4 sm:p-6 lg:p-8 bg-surface min-w-0"
     >
       {/* Header */}
       <div className="flex justify-between items-center sm:items-end mb-4 sm:mb-8">
         <div>
           <div className="flex items-center gap-2 sm:gap-2.5 mb-1">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-on-tertiary-container/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-tertiary-container text-[16px] sm:text-[18px]">monitoring</span>
+              <Activity className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-on-tertiary-container" />
             </div>
             <h2 className="text-base sm:text-xl font-black tracking-tight text-primary">Trabajos Recientes</h2>
           </div>
@@ -76,7 +77,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
           className="text-center py-12 sm:py-20 text-on-surface-variant"
         >
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-container-low mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-            <span className="material-symbols-outlined text-2xl sm:text-3xl opacity-40">assignment</span>
+            <ClipboardList className="w-6 h-6 sm:w-7 sm:h-7 opacity-40" />
           </div>
           <p className="text-sm font-bold text-on-surface">Aún no hay reportes</p>
           <p className="text-xs mt-1 text-on-surface-variant">Envía una solicitud de reporte para comenzar</p>
@@ -114,9 +115,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
-                        {FORMAT_ICONS[job.parameters.format || 'json'] || 'description'}
-                      </span>
+                      {FORMAT_ICONS[job.parameters.format || 'json'] || FORMAT_ICONS.json}
                       <span className="text-[10px] text-on-surface-variant/60 uppercase tracking-wider font-medium">
                         {(job.parameters.format || 'json').toUpperCase()}
                       </span>
@@ -141,11 +140,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
             <table className="w-full text-left table-fixed border-separate" style={{ borderSpacing: '0 8px' }}>
               <thead>
                 <tr className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-[0.15em]">
-                  <th className="pb-3 pl-4 pr-2 w-[15%]">ID</th>
-                  <th className="pb-3 px-2 w-[30%]">Tipo de Reporte</th>
-                  <th className="pb-3 px-2 w-[13%]">Creado</th>
-                  <th className="pb-3 px-2 w-[22%] text-center">Estado</th>
-                  <th className="pb-3 pl-2 pr-4 w-[20%] text-right">Acciones</th>
+                  <th className="pb-3 pl-4 pr-2 w-[12%]">ID</th>
+                  <th className="pb-3 px-2 w-[28%]">Tipo de Reporte</th>
+                  <th className="pb-3 px-2 w-[12%]">Creado</th>
+                  <th className="pb-3 px-2 w-[24%] text-center">Estado</th>
+                  <th className="pb-3 pl-2 pr-4 w-[24%] text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,9 +171,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                           )}
                         </div>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
-                            {FORMAT_ICONS[job.parameters.format || 'json'] || 'description'}
-                          </span>
+                          {FORMAT_ICONS[job.parameters.format || 'json'] || FORMAT_ICONS.json}
                           <span className="text-[10px] text-on-surface-variant/60 uppercase tracking-wider font-medium">
                             {(job.parameters.format || 'json').toUpperCase()}
                           </span>
@@ -317,7 +314,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
           whileTap={{ scale: 0.95 }}
           className="inline-flex items-center gap-1.5 text-[10px] font-black text-surface-tint uppercase tracking-widest bg-surface-tint/[0.06] px-3 py-2 sm:py-1.5 rounded-lg hover:bg-surface-tint/[0.12] transition-colors"
         >
-          <span className="material-symbols-outlined text-[14px]">download</span>
+          <Download className="w-3.5 h-3.5" />
           Descargar
         </motion.a>
       );
@@ -331,7 +328,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-1.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest bg-surface-container-low px-3 py-2 sm:py-1.5 rounded-lg hover:bg-surface-container transition-colors"
           >
-            <span className="material-symbols-outlined text-[14px]">terminal</span>
+            <Terminal className="w-3.5 h-3.5" />
             Ver Log
           </motion.button>
           <Popover
@@ -370,7 +367,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
     case 'PENDING':
       return (
         <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-amber-600/80 uppercase tracking-widest">
-          <span className="material-symbols-outlined text-[14px]">schedule</span>
+          <Clock className="w-3.5 h-3.5" />
           En Cola
         </span>
       );
@@ -384,7 +381,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-1.5 text-[10px] font-black text-error uppercase tracking-widest bg-error/[0.06] px-3 py-2 sm:py-1.5 rounded-lg hover:bg-error/[0.12] transition-colors"
           >
-            <span className="material-symbols-outlined text-[14px]">error_outline</span>
+            <AlertCircle className="w-3.5 h-3.5" />
             Ver Error
           </motion.button>
           <Popover
@@ -420,7 +417,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
                     tipo durante 60 segundos. Después pasa a estado semi-abierto y permite un intento de prueba.
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="material-symbols-outlined text-[12px] text-error/60">info</span>
+                    <Info className="w-3 h-3 text-error/60 shrink-0" />
                     <span className="text-[9px] text-error/60">Los demás tipos de reporte no se ven afectados.</span>
                   </div>
                 </>
