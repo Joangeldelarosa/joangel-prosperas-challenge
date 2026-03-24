@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { CheckCircle, RefreshCw, Clock, XCircle } from 'lucide-react';
 import type { Job } from '../types';
 
 interface JobStatusBadgeProps {
@@ -11,30 +12,31 @@ const STATUS_CONFIG = {
     bg: 'bg-emerald-500/10',
     text: 'text-on-tertiary-container',
     label: 'Completado',
-    icon: 'check_circle',
+    Icon: CheckCircle,
   },
   PROCESSING: {
     bg: 'bg-secondary-container',
     text: 'text-surface-tint',
     label: 'Procesando',
-    icon: 'sync',
+    Icon: RefreshCw,
   },
   PENDING: {
     bg: 'bg-amber-500/10',
     text: 'text-amber-600',
     label: 'Pendiente',
-    icon: 'schedule',
+    Icon: Clock,
   },
   FAILED: {
     bg: 'bg-error-container',
     text: 'text-error',
     label: 'Fallido',
-    icon: 'error',
+    Icon: XCircle,
   },
 };
 
 const JobStatusBadge: React.FC<JobStatusBadgeProps> = ({ status }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
+  const IconComponent = config.Icon;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -45,14 +47,14 @@ const JobStatusBadge: React.FC<JobStatusBadgeProps> = ({ status }) => {
       >
         {status === 'PROCESSING' ? (
           <motion.span
-            className="material-symbols-outlined text-[12px]"
+            className="inline-flex"
             animate={{ rotate: 360 }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
           >
-            {config.icon}
+            <IconComponent className="w-3 h-3" />
           </motion.span>
         ) : (
-          <span className="material-symbols-outlined text-[12px]">{config.icon}</span>
+          <IconComponent className="w-3 h-3" />
         )}
         {config.label}
       </motion.span>

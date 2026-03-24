@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, ClipboardList, FileText, FileSpreadsheet, Braces, Download, Terminal, Clock, AlertCircle, Info } from 'lucide-react';
 import type { Job } from '../types';
 import JobStatusBadge from './JobStatusBadge';
 import { jobsApi } from '../services/api';
@@ -23,10 +25,10 @@ const formatTime = (isoString: string): string => {
   }
 };
 
-const FORMAT_ICONS: Record<string, string> = {
-  pdf: 'picture_as_pdf',
-  csv: 'table_chart',
-  json: 'data_object',
+const FORMAT_ICONS: Record<string, React.ReactNode> = {
+  pdf: <FileText className="w-3 h-3 text-on-surface-variant/50" />,
+  csv: <FileSpreadsheet className="w-3 h-3 text-on-surface-variant/50" />,
+  json: <Braces className="w-3 h-3 text-on-surface-variant/50" />,
 };
 
 const rowVariants = {
@@ -44,14 +46,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="lg:col-span-7 p-4 sm:p-6 lg:p-10 bg-surface"
+      className="lg:col-span-8 p-4 sm:p-6 lg:p-8 bg-surface min-w-0"
     >
       {/* Header */}
       <div className="flex justify-between items-center sm:items-end mb-4 sm:mb-8">
         <div>
           <div className="flex items-center gap-2 sm:gap-2.5 mb-1">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-on-tertiary-container/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-tertiary-container text-[16px] sm:text-[18px]">monitoring</span>
+              <Activity className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-on-tertiary-container" />
             </div>
             <h2 className="text-base sm:text-xl font-black tracking-tight text-primary">Trabajos Recientes</h2>
           </div>
@@ -75,7 +77,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
           className="text-center py-12 sm:py-20 text-on-surface-variant"
         >
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-container-low mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-            <span className="material-symbols-outlined text-2xl sm:text-3xl opacity-40">assignment</span>
+            <ClipboardList className="w-6 h-6 sm:w-7 sm:h-7 opacity-40" />
           </div>
           <p className="text-sm font-bold text-on-surface">Aún no hay reportes</p>
           <p className="text-xs mt-1 text-on-surface-variant">Envía una solicitud de reporte para comenzar</p>
@@ -113,9 +115,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
-                        {FORMAT_ICONS[job.parameters.format || 'json'] || 'description'}
-                      </span>
+                      {FORMAT_ICONS[job.parameters.format || 'json'] || FORMAT_ICONS.json}
                       <span className="text-[10px] text-on-surface-variant/60 uppercase tracking-wider font-medium">
                         {(job.parameters.format || 'json').toUpperCase()}
                       </span>
@@ -136,16 +136,15 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
           </div>
 
           {/* ── Desktop Table View ── */}
-          <div className="hidden md:block">
-            <table className="w-full text-left border-separate border-spacing-y-2" style={{ borderSpacing: '0 8px' }}>
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left table-fixed border-separate" style={{ borderSpacing: '0 8px' }}>
               <thead>
                 <tr className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-[0.15em]">
-                  <th className="pb-3 pl-4 pr-3 w-[100px]">ID</th>
-                  <th className="pb-3 px-3">Tipo de Reporte</th>
-                  <th className="pb-3 px-3 w-[90px]">Prioridad</th>
-                  <th className="pb-3 px-3 w-[72px]">Creado</th>
-                  <th className="pb-3 px-3 w-[120px] text-center">Estado</th>
-                  <th className="pb-3 pl-3 pr-4 w-[110px] text-right">Acciones</th>
+                  <th className="pb-3 pl-4 pr-2 w-[12%]">ID</th>
+                  <th className="pb-3 px-2 w-[28%]">Tipo de Reporte</th>
+                  <th className="pb-3 px-2 w-[12%]">Creado</th>
+                  <th className="pb-3 px-2 w-[24%] text-center">Estado</th>
+                  <th className="pb-3 pl-2 pr-4 w-[24%] text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,36 +160,30 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
                       layout
                       className="bg-surface-container-lowest group hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-shadow duration-200"
                     >
-                      <td className="py-3.5 pl-4 pr-3 rounded-l-xl">
+                      <td className="py-3.5 pl-4 pr-2 rounded-l-xl">
                         <span className="text-xs font-mono font-bold text-on-surface/80">#{job.job_id.slice(0, 8)}</span>
                       </td>
-                      <td className="py-3.5 px-3">
-                        <p className="text-xs font-bold text-on-surface truncate">{reportTypeLabel(job.report_type)}</p>
+                      <td className="py-3.5 px-2 overflow-hidden">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-bold text-on-surface truncate">{reportTypeLabel(job.report_type)}</p>
+                          {isHighPriority(job.report_type) && (
+                            <span className="shrink-0 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600" role="img" aria-label="Alta prioridad">⚡</span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
-                            {FORMAT_ICONS[job.parameters.format || 'json'] || 'description'}
-                          </span>
+                          {FORMAT_ICONS[job.parameters.format || 'json'] || FORMAT_ICONS.json}
                           <span className="text-[10px] text-on-surface-variant/60 uppercase tracking-wider font-medium">
                             {(job.parameters.format || 'json').toUpperCase()}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-3">
-                        <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap ${
-                          isHighPriority(job.report_type)
-                            ? 'bg-amber-500/15 text-amber-600'
-                            : 'bg-surface-container-high/60 text-on-surface-variant/60'
-                        }`}>
-                          {isHighPriority(job.report_type) ? '⚡ Alta' : 'Estándar'}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-3 text-xs font-medium text-on-surface-variant whitespace-nowrap">
+                      <td className="py-3.5 px-2 text-xs font-medium text-on-surface-variant whitespace-nowrap">
                         {formatTime(job.created_at)}
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-3.5 px-2 text-center">
                         <JobStatusBadge status={job.status} />
                       </td>
-                      <td className="py-3.5 pl-3 pr-4 rounded-r-xl text-right">
+                      <td className="py-3.5 pl-2 pr-4 rounded-r-xl text-right">
                         <JobAction job={job} />
                       </td>
                     </motion.tr>
@@ -233,25 +226,55 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
   );
 };
 
-/* ── Popover wrapper with outside-click dismiss ── */
+/* ── Popover rendered via portal to escape overflow-hidden ancestors ── */
 const Popover: React.FC<{
   show: boolean;
   onClose: () => void;
-  className?: string;
+  anchorRef: React.RefObject<HTMLElement | null>;
+  width?: string;
+  borderColor?: string;
   children: React.ReactNode;
-}> = ({ show, onClose, className = '', children }) => {
+}> = ({ show, onClose, anchorRef, width = 'w-72', borderColor = 'border-outline-variant/20', children }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  const updatePosition = useCallback(() => {
+    if (!anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    setPos({
+      top: rect.bottom + 6,
+      left: rect.right,
+    });
+  }, [anchorRef]);
+
+  useEffect(() => {
+    if (!show) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [show, updatePosition]);
 
   useEffect(() => {
     if (!show) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+      if (
+        ref.current && !ref.current.contains(e.target as Node) &&
+        anchorRef.current && !anchorRef.current.contains(e.target as Node)
+      ) {
+        onClose();
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [show, onClose]);
+  }, [show, onClose, anchorRef]);
 
-  return (
+  if (!show || !pos) return null;
+
+  return createPortal(
     <AnimatePresence>
       {show && (
         <motion.div
@@ -260,17 +283,25 @@ const Popover: React.FC<{
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 4, scale: 0.95 }}
           transition={{ duration: 0.15 }}
-          className={className}
+          className={`fixed z-50 ${width} max-w-[calc(100vw-2rem)] bg-surface-container-lowest border ${borderColor} rounded-xl p-4 shadow-xl`}
+          style={{
+            top: pos.top,
+            right: Math.max(16, window.innerWidth - pos.left),
+            maxHeight: `calc(100vh - ${pos.top + 16}px)`,
+            overflowY: 'auto',
+          }}
         >
           {children}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
 const JobAction: React.FC<{ job: Job }> = ({ job }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   switch (job.status) {
     case 'COMPLETED':
@@ -283,26 +314,27 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
           whileTap={{ scale: 0.95 }}
           className="inline-flex items-center gap-1.5 text-[10px] font-black text-surface-tint uppercase tracking-widest bg-surface-tint/[0.06] px-3 py-2 sm:py-1.5 rounded-lg hover:bg-surface-tint/[0.12] transition-colors"
         >
-          <span className="material-symbols-outlined text-[14px]">download</span>
+          <Download className="w-3.5 h-3.5" />
           Descargar
         </motion.a>
       );
     case 'PROCESSING':
       return (
-        <div className="relative">
+        <>
           <motion.button
+            ref={btnRef}
             onClick={() => setShowDetails(!showDetails)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-1.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest bg-surface-container-low px-3 py-2 sm:py-1.5 rounded-lg hover:bg-surface-container transition-colors"
           >
-            <span className="material-symbols-outlined text-[14px]">terminal</span>
+            <Terminal className="w-3.5 h-3.5" />
             Ver Log
           </motion.button>
           <Popover
             show={showDetails}
             onClose={() => setShowDetails(false)}
-            className="absolute right-0 top-10 z-20 bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 shadow-xl w-72 max-w-[calc(100vw-3rem)]"
+            anchorRef={btnRef}
           >
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Procesando...</p>
@@ -330,31 +362,34 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
               />
             </div>
           </Popover>
-        </div>
+        </>
       );
     case 'PENDING':
       return (
         <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-amber-600/80 uppercase tracking-widest">
-          <span className="material-symbols-outlined text-[14px]">schedule</span>
+          <Clock className="w-3.5 h-3.5" />
           En Cola
         </span>
       );
     case 'FAILED':
       return (
-        <div className="relative">
+        <>
           <motion.button
+            ref={btnRef}
             onClick={() => setShowDetails(!showDetails)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-1.5 text-[10px] font-black text-error uppercase tracking-widest bg-error/[0.06] px-3 py-2 sm:py-1.5 rounded-lg hover:bg-error/[0.12] transition-colors"
           >
-            <span className="material-symbols-outlined text-[14px]">error_outline</span>
+            <AlertCircle className="w-3.5 h-3.5" />
             Ver Error
           </motion.button>
           <Popover
             show={showDetails}
             onClose={() => setShowDetails(false)}
-            className="absolute right-0 top-10 z-20 bg-surface-container-lowest border border-error/20 rounded-xl p-4 shadow-xl w-80 max-w-[calc(100vw-3rem)]"
+            anchorRef={btnRef}
+            width="w-80"
+            borderColor="border-error/20"
           >
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-bold text-error uppercase tracking-wider">Error de Procesamiento</p>
@@ -382,7 +417,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
                     tipo durante 60 segundos. Después pasa a estado semi-abierto y permite un intento de prueba.
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="material-symbols-outlined text-[12px] text-error/60">info</span>
+                    <Info className="w-3 h-3 text-error/60 shrink-0" />
                     <span className="text-[9px] text-error/60">Los demás tipos de reporte no se ven afectados.</span>
                   </div>
                 </>
@@ -398,7 +433,7 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
               )}
             </div>
           </Popover>
-        </div>
+        </>
       );
     default:
       return null;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { TrendingUp, CheckCircle, ListOrdered } from 'lucide-react';
 import type { Job } from '../types';
 
 interface SummaryCardsProps {
@@ -32,7 +33,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
 
   const cards = [
     {
-      icon: 'trending_up',
+      Icon: TrendingUp,
       label: 'Total de Reportes',
       value: total,
       badge: completedCount > 0 ? `+${completedCount} listos` : 'Sin datos',
@@ -41,7 +42,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
         : 'text-on-surface-variant/60 bg-surface-container-low',
     },
     {
-      icon: 'check_circle',
+      Icon: CheckCircle,
       label: 'Tasa de Éxito',
       value: successLabel,
       badge: finishedCount > 0 ? `${finishedCount} finalizados` : 'Sin datos',
@@ -54,7 +55,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
             : 'text-on-surface-variant/60 bg-surface-container-low',
     },
     {
-      icon: 'queue',
+      Icon: ListOrdered,
       label: 'En Cola Ahora',
       value: queueActive,
       badge: processingCount > 0 ? `${processingCount} procesando` : 'Cola vacía',
@@ -78,7 +79,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
         >
           <div className="flex justify-between items-start mb-3 sm:mb-5">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface-container-low flex items-center justify-center">
-              <span className="material-symbols-outlined text-surface-tint text-[18px] sm:text-[20px]">{card.icon}</span>
+              <card.Icon className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-surface-tint" />
             </div>
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${card.badgeColor}`}>
               {card.badge}

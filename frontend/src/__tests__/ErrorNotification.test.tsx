@@ -29,8 +29,8 @@ describe('ErrorNotification', () => {
     const user = userEvent.setup()
     render(<ErrorNotification message="Cerrar esto" onDismiss={onDismiss} />)
 
-    const closeButtons = screen.getAllByText('close')
-    await user.click(closeButtons[0]!)
+    const closeButton = screen.getByLabelText('Cerrar notificación')
+    await user.click(closeButton)
     expect(onDismiss).toHaveBeenCalled()
   })
 })

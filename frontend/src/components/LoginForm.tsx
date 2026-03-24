@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart3, AlertCircle } from 'lucide-react';
 
 interface LoginFormProps {
   onLogin: (username: string, password: string) => Promise<void>;
@@ -38,7 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading, err
           className="text-center mb-6 sm:mb-10"
         >
           <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container shadow-lg mb-3 sm:mb-4">
-            <span className="material-symbols-outlined text-white text-xl sm:text-2xl">analytics</span>
+            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <h1 className="font-black text-2xl sm:text-3xl tracking-tighter text-black uppercase">Prosperas</h1>
           <p className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/60 uppercase mt-1">Reports Challenge</p>
@@ -74,7 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading, err
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-6 p-4 rounded-xl bg-error-container/80 text-error text-xs font-bold flex items-center gap-2 overflow-hidden"
               >
-                <span className="material-symbols-outlined text-sm">error</span>
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {error}
               </motion.div>
             )}

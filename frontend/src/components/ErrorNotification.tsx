@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { XCircle, CheckCircle, Info, X } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -12,6 +13,12 @@ interface ErrorNotificationProps {
   type?: 'error' | 'success' | 'info';
   onDismiss?: () => void;
 }
+
+const iconMap = {
+  error: XCircle,
+  success: CheckCircle,
+  info: Info,
+};
 
 const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = 'error', onDismiss }) => {
   const [visible, setVisible] = useState(false);
@@ -35,11 +42,7 @@ const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = '
     info: 'bg-secondary-container text-surface-tint border-surface-tint/20',
   };
 
-  const icons = {
-    error: 'error',
-    success: 'check_circle',
-    info: 'info',
-  };
+  const IconComponent = iconMap[type];
 
   return (
     <AnimatePresence>
@@ -52,7 +55,7 @@ const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = '
           className={`fixed top-3 left-3 right-3 sm:left-auto sm:right-4 sm:top-4 z-50 sm:max-w-sm p-3 sm:p-4 rounded-xl border shadow-lg backdrop-blur-sm ${colors[type]}`}
         >
           <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-lg mt-0.5">{icons[type]}</span>
+            <IconComponent className="w-[18px] h-[18px] mt-0.5 shrink-0" />
             <div className="flex-1">
               <p className="text-xs font-bold">{message}</p>
             </div>
@@ -62,8 +65,9 @@ const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = '
                 onDismiss?.();
               }}
               className="opacity-60 hover:opacity-100 transition-opacity"
+              aria-label="Cerrar notificación"
             >
-              <span className="material-symbols-outlined text-sm">close</span>
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </motion.div>

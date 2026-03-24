@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { BarChart3, Layers, CalendarRange, FileText, FileSpreadsheet, Braces, Send, Loader2, Info } from 'lucide-react';
 import type { CreateJobRequest } from '../types';
 import { REPORT_TYPES } from '../utils/labels';
 
@@ -10,10 +11,10 @@ interface JobFormProps {
 
 const FORMATS = ['pdf', 'csv', 'json'] as const;
 
-const FORMAT_ICONS: Record<string, string> = {
-  pdf: 'picture_as_pdf',
-  csv: 'table_chart',
-  json: 'data_object',
+const FORMAT_ICON_MAP: Record<string, React.ReactNode> = {
+  pdf: <FileText className="w-[18px] h-[18px]" />,
+  csv: <FileSpreadsheet className="w-[18px] h-[18px]" />,
+  json: <Braces className="w-[18px] h-[18px]" />,
 };
 
 const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
@@ -36,12 +37,12 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="lg:col-span-5 p-4 sm:p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-outline-variant/10 bg-surface-container-lowest"
+      className="lg:col-span-4 p-4 sm:p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-outline-variant/10 bg-surface-container-lowest"
     >
       <div className="mb-5 sm:mb-8">
         <div className="flex items-center gap-2.5 mb-2">
           <div className="w-8 h-8 rounded-lg bg-surface-tint/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-surface-tint text-[18px]">add_chart</span>
+            <BarChart3 className="w-[18px] h-[18px] text-surface-tint" />
           </div>
           <h2 className="text-lg sm:text-xl font-black tracking-tight text-primary">Solicitar Reporte</h2>
         </div>
@@ -54,7 +55,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         {/* Report Type */}
         <div className="space-y-2.5">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[14px]">category</span>
+            <Layers className="w-3.5 h-3.5" />
             Tipo de Reporte
           </label>
           <select
@@ -71,7 +72,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         {/* Date Range */}
         <div className="space-y-2.5">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[14px]">date_range</span>
+            <CalendarRange className="w-3.5 h-3.5" />
             Rango de Fechas
           </label>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -99,7 +100,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         {/* Format */}
         <div className="space-y-2.5">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[14px]">description</span>
+            <FileText className="w-3.5 h-3.5" />
             Formato
           </label>
           <div className="grid grid-cols-3 gap-3">
@@ -118,7 +119,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
                   whileTap={{ scale: 0.97 }}
                   className="py-3 flex flex-col items-center gap-1 rounded-xl bg-surface-container-low text-on-surface-variant peer-checked:bg-gradient-to-br peer-checked:from-primary peer-checked:to-primary-container peer-checked:text-white peer-checked:shadow-lg transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-[18px]">{FORMAT_ICONS[fmt]}</span>
+                  {FORMAT_ICON_MAP[fmt]}
                   <span className="text-[10px] font-bold uppercase tracking-widest">{fmt.toUpperCase()}</span>
                 </motion.div>
               </label>
@@ -136,17 +137,17 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <motion.span
-                className="material-symbols-outlined text-[16px]"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="inline-flex"
               >
-                progress_activity
+                <Loader2 className="w-4 h-4" />
               </motion.span>
               Enviando...
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-[16px]">send</span>
+              <Send className="w-4 h-4" />
               Generar Reporte
             </span>
           )}
@@ -161,7 +162,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         className="mt-6 sm:mt-10 p-4 sm:p-5 rounded-xl bg-surface-tint/[0.04] border border-surface-tint/10"
       >
         <div className="flex items-start gap-3">
-          <span className="material-symbols-outlined text-surface-tint mt-0.5 text-[18px]">info</span>
+          <Info className="w-[18px] h-[18px] text-surface-tint mt-0.5 shrink-0" />
           <div>
             <p className="text-[10px] font-black text-on-surface uppercase tracking-wider mb-1">Estado de la Cola</p>
             <p className="text-xs text-on-surface-variant leading-relaxed">
