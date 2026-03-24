@@ -8,10 +8,10 @@ describe('JobForm', () => {
     render(<JobForm onSubmit={vi.fn()} />)
 
     expect(screen.getByText('Solicitar Reporte')).toBeInTheDocument()
-    expect(screen.getByText('Tipo de Reporte')).toBeInTheDocument()
-    expect(screen.getByText('Rango de Fechas')).toBeInTheDocument()
-    expect(screen.getByText('Formato')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Generar Reporte' })).toBeInTheDocument()
+    expect(screen.getByText(/Tipo de Reporte/)).toBeInTheDocument()
+    expect(screen.getByText(/Rango de Fechas/)).toBeInTheDocument()
+    expect(screen.getByText(/Formato/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Generar Reporte/ })).toBeInTheDocument()
   })
 
   it('renders all report type options', () => {
@@ -48,7 +48,7 @@ describe('JobForm', () => {
     await user.click(csvRadio)
 
     // Submit
-    await user.click(screen.getByRole('button', { name: 'Generar Reporte' }))
+    await user.click(screen.getByRole('button', { name: /Generar Reporte/ }))
 
     expect(onSubmit).toHaveBeenCalledWith({
       report_type: 'revenue_breakdown',
@@ -59,7 +59,7 @@ describe('JobForm', () => {
 
   it('disables submit button when loading', () => {
     render(<JobForm onSubmit={vi.fn()} loading={true} />)
-    expect(screen.getByRole('button', { name: 'Enviando...' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Enviando/ })).toBeDisabled()
   })
 
   it('shows queue status info section', () => {

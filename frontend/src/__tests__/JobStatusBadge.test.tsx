@@ -11,8 +11,8 @@ describe('JobStatusBadge', () => {
   it('renders PROCESSING status with progress bar', () => {
     const { container } = render(<JobStatusBadge status="PROCESSING" />)
     expect(screen.getByText('Procesando')).toBeInTheDocument()
-    // Progress bar should be visible
-    const progressBar = container.querySelector('.animate-pulse')
+    // Progress bar container should be visible
+    const progressBar = container.querySelector('.bg-surface-container-high')
     expect(progressBar).toBeInTheDocument()
   })
 
@@ -28,7 +28,7 @@ describe('JobStatusBadge', () => {
 
   it('does not show progress bar for non-PROCESSING statuses', () => {
     const { container } = render(<JobStatusBadge status="COMPLETED" />)
-    const progressBar = container.querySelector('.animate-pulse')
+    const progressBar = container.querySelector('.bg-surface-container-high')
     expect(progressBar).not.toBeInTheDocument()
   })
 })

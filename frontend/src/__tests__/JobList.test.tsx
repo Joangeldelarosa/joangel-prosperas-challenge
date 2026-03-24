@@ -47,8 +47,8 @@ describe('JobList', () => {
 
     expect(screen.getByText('#abc12345')).toBeInTheDocument()
     expect(screen.getByText('#def12345')).toBeInTheDocument()
-    expect(screen.getByText('Engagement Analytics')).toBeInTheDocument()
-    expect(screen.getByText('Revenue Breakdown')).toBeInTheDocument()
+    expect(screen.getByText('Analítica de Engagement')).toBeInTheDocument()
+    expect(screen.getByText('Desglose de Ingresos')).toBeInTheDocument()
     expect(screen.getByText('Completado')).toBeInTheDocument()
     expect(screen.getByText('Pendiente')).toBeInTheDocument()
   })

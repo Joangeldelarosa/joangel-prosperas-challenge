@@ -26,6 +26,21 @@ const config: Config = {
         body: ['Inter', 'sans-serif'],
         label: ['Inter', 'sans-serif'],
       },
+      keyframes: {
+        'shimmer': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'progress-indeterminate': {
+          '0%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        'shimmer': 'shimmer 2s infinite',
+        'progress': 'progress-indeterminate 1.8s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

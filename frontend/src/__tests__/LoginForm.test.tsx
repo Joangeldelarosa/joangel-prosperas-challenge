@@ -25,8 +25,12 @@ describe('LoginForm', () => {
 
     await user.click(screen.getByText('¿No tienes cuenta? Regístrate'))
 
-    expect(screen.getByRole('heading', { name: 'Crear Cuenta' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Crear Cuenta' })).toBeInTheDocument()
+    // After toggle, the register heading and button should appear
+    const heading = await screen.findByText((content, element) => {
+      return element?.tagName === 'H2' && content === 'Crear Cuenta'
+    })
+    expect(heading).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Crear Cuenta/ })).toBeInTheDocument()
     expect(screen.getByText('¿Ya tienes cuenta? Iniciar Sesión')).toBeInTheDocument()
   })
 

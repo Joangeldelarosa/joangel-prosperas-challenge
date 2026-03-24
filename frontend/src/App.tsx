@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import Layout from './components/Layout'
 import LoginForm from './components/LoginForm'
 import JobForm from './components/JobForm'
@@ -39,7 +40,12 @@ function Dashboard() {
       />
 
       {/* Main Dashboard Container */}
-      <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_12px_32px_rgba(25,28,30,0.04)] grid grid-cols-1 lg:grid-cols-12 min-h-[700px] border border-outline-variant/10">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+        className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.05)] grid grid-cols-1 lg:grid-cols-12 min-h-[600px] border border-outline-variant/10"
+      >
         <JobForm onSubmit={handleCreateJob} loading={submitLoading} />
         <JobList
           jobs={jobs}
@@ -49,7 +55,7 @@ function Dashboard() {
           onNextPage={nextPage}
           onPrevPage={prevPage}
         />
-      </div>
+      </motion.div>
 
       <SummaryCards jobs={jobs} total={total} />
     </Layout>

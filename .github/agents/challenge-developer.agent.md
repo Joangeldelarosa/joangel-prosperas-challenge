@@ -268,7 +268,7 @@ The file `DESIGN_REFERENCE.html` at the project root contains the exact visual d
 ### Brand & Typography
 - **Font**: Inter (Google Fonts) — weights 100–900
 - **Icons**: Material Symbols Outlined
-- **Brand**: "Prosperas" (uppercase, font-black, tracking-tighter) with subtitle "Editorial Analytics"
+- **Brand**: "Prosperas" (uppercase, font-black, tracking-tighter) with subtitle "Reports Challenge"
 
 ### Color Palette (Tailwind custom theme)
 | Token | Hex | Usage |

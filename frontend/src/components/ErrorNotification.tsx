@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Notification {
   id: string;
@@ -28,8 +29,6 @@ const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = '
     }
   }, [message, onDismiss]);
 
-  if (!visible || !message) return null;
-
   const colors = {
     error: 'bg-error-container text-error border-error/20',
     success: 'bg-emerald-500/10 text-on-tertiary-container border-on-tertiary-container/20',
@@ -43,23 +42,33 @@ const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = '
   };
 
   return (
-    <div className={`fixed top-4 right-4 z-50 max-w-sm p-4 rounded-xl border shadow-lg ${colors[type]} animate-in`}>
-      <div className="flex items-start space-x-3">
-        <span className="material-symbols-outlined text-lg mt-0.5">{icons[type]}</span>
-        <div className="flex-1">
-          <p className="text-xs font-bold">{message}</p>
-        </div>
-        <button
-          onClick={() => {
-            setVisible(false);
-            onDismiss?.();
-          }}
-          className="opacity-60 hover:opacity-100 transition-opacity"
+    <AnimatePresence>
+      {visible && message && (
+        <motion.div
+          initial={{ opacity: 0, y: -12, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -12, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className={`fixed top-4 right-4 z-50 max-w-sm p-4 rounded-xl border shadow-lg backdrop-blur-sm ${colors[type]}`}
         >
-          <span className="material-symbols-outlined text-sm">close</span>
-        </button>
-      </div>
-    </div>
+          <div className="flex items-start gap-3">
+            <span className="material-symbols-outlined text-lg mt-0.5">{icons[type]}</span>
+            <div className="flex-1">
+              <p className="text-xs font-bold">{message}</p>
+            </div>
+            <button
+              onClick={() => {
+                setVisible(false);
+                onDismiss?.();
+              }}
+              className="opacity-60 hover:opacity-100 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
