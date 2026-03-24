@@ -79,7 +79,7 @@ jobs:
     outputs:
       api_url: ${{ steps.tf-outputs.outputs.api_url }}
       frontend_bucket: ${{ steps.tf-outputs.outputs.frontend_bucket }}
-      cloudfront_id: ${{ steps.tf-outputs.outputs.cloudfront_id }}
+      frontend_url: ${{ steps.tf-outputs.outputs.frontend_url }}
 
     steps:
       - name: Checkout code
@@ -102,10 +102,6 @@ jobs:
         working-directory: infra
         run: terraform init
 
-      - name: Import pre-created ECR repository
-        working-directory: infra
-        run: terraform import aws_ecr_repository.api prosperas-api 2>/dev/null || true
-
       - name: Terraform Plan
         working-directory: infra
         run: terraform plan -var="jwt_secret_key=${{ secrets.JWT_SECRET_KEY }}" -out=tfplan
@@ -120,7 +116,7 @@ jobs:
         run: |
           echo "api_url=$(terraform output -raw api_url)" >> "$GITHUB_OUTPUT"
           echo "frontend_bucket=$(terraform output -raw s3_frontend_bucket)" >> "$GITHUB_OUTPUT"
-          echo "cloudfront_id=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
+          echo "frontend_url=$(terraform output -raw frontend_url)" >> "$GITHUB_OUTPUT"
 
   # Deploy ECS services
   deploy-backend:
@@ -157,7 +153,7 @@ jobs:
             --services ${{ env.PROJECT_NAME }}-api
         timeout-minutes: 10
 
-  # Deploy frontend to S3 + CloudFront
+  # Deploy frontend to S3 static website
   deploy-frontend:
     name: Deploy Frontend
     needs: [build-and-push, deploy-infra]
@@ -185,12 +181,6 @@ jobs:
             --exclude "index.html"
           aws s3 cp dist/index.html s3://${{ needs.deploy-infra.outputs.frontend_bucket }}/index.html \
             --cache-control "no-cache, no-store, must-revalidate"
-
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ needs.deploy-infra.outputs.cloudfront_id }} \
-            --paths "/*"
 
   # Health check
   health-check:

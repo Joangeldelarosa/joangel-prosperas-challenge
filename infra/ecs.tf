@@ -31,7 +31,7 @@ resource "aws_ecs_task_definition" "api" {
 
   container_definitions = jsonencode([{
     name  = "api"
-    image = "${aws_ecr_repository.api.repository_url}:latest"
+    image = "${data.aws_ecr_repository.api.repository_url}:latest"
     portMappings = [{
       containerPort = 8000
       protocol      = "tcp"
@@ -46,7 +46,7 @@ resource "aws_ecs_task_definition" "api" {
       { name = "DYNAMODB_USERS_TABLE", value = aws_dynamodb_table.users.name },
       { name = "S3_BUCKET_NAME", value = aws_s3_bucket.reports.id },
       { name = "JWT_SECRET_KEY", value = var.jwt_secret_key },
-      { name = "FRONTEND_URL", value = "https://${aws_cloudfront_distribution.frontend.domain_name}" },
+      { name = "FRONTEND_URL", value = "http://${aws_s3_bucket_website_configuration.frontend.website_endpoint}" },
     ]
     logConfiguration = {
       logDriver = "awslogs"
@@ -71,7 +71,7 @@ resource "aws_ecs_task_definition" "worker" {
 
   container_definitions = jsonencode([{
     name    = "worker"
-    image   = "${aws_ecr_repository.api.repository_url}:latest"
+    image   = "${data.aws_ecr_repository.api.repository_url}:latest"
     command = ["python", "-m", "app.worker"]
     environment = [
       { name = "APP_ENV", value = "production" },
