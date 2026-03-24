@@ -57,19 +57,6 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ env.PROJECT_NAME }}-api:${{ steps.meta.outputs.image_tag }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.PROJECT_NAME }}-api:latest
 
-      - name: Build frontend for production
-        run: |
-          cd frontend
-          npm ci || npm install
-          VITE_API_URL=${{ secrets.API_URL }} npm run build
-
-      - name: Upload frontend build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/dist/
-          retention-days: 1
-
   # Deploy infrastructure with Terraform
   deploy-infra:
     name: Deploy Infrastructure
@@ -155,11 +142,14 @@ jobs:
 
   # Deploy frontend to S3 static website
   deploy-frontend:
-    name: Deploy Frontend
-    needs: [build-and-push, deploy-infra]
+    name: Build & Deploy Frontend
+    needs: [deploy-infra]
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -167,19 +157,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: dist/
+      - name: Build frontend with production API URL
+        run: |
+          cd frontend
+          npm ci || npm install
+          VITE_API_URL=${{ needs.deploy-infra.outputs.api_url }} npm run build
 
       - name: Deploy to S3
         run: |
-          aws s3 sync dist/ s3://${{ needs.deploy-infra.outputs.frontend_bucket }}/ \
+          aws s3 sync frontend/dist/ s3://${{ needs.deploy-infra.outputs.frontend_bucket }}/ \
             --delete \
             --cache-control "public, max-age=31536000, immutable" \
             --exclude "index.html"
-          aws s3 cp dist/index.html s3://${{ needs.deploy-infra.outputs.frontend_bucket }}/index.html \
+          aws s3 cp frontend/dist/index.html s3://${{ needs.deploy-infra.outputs.frontend_bucket }}/index.html \
             --cache-control "no-cache, no-store, must-revalidate"
 
   # Health check
