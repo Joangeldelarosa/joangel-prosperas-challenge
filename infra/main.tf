@@ -8,12 +8,12 @@ terraform {
     }
   }
 
-  # Remote state — uncomment for production
-  # backend "s3" {
-  #   bucket = "prosperas-terraform-state"
-  #   key    = "prod/terraform.tfstate"
-  #   region = "us-east-1"
-  # }
+  # Remote state for production
+  backend "s3" {
+    bucket = "prosperas-terraform-state"
+    key    = "prod/terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 
 provider "aws" {
