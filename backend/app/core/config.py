@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     # SQS
     sqs_queue_name: str = "report-jobs"
     sqs_dlq_name: str = "report-jobs-dlq"
+    sqs_high_priority_queue_name: str = "report-jobs-high"
     sqs_max_receive_count: int = 3
 
     # DynamoDB
@@ -35,6 +36,14 @@ class Settings(BaseSettings):
 
     # S3
     s3_bucket_name: str = "report-results"
+
+    # Retry
+    retry_base_delay: int = 10
+    retry_max_delay: int = 120
+
+    # Circuit Breaker
+    circuit_breaker_threshold: int = 3
+    circuit_breaker_timeout: int = 60
 
     @property
     def is_local(self) -> bool:

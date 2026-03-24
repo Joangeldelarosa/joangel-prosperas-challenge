@@ -45,12 +45,13 @@ describe('JobList', () => {
     ]
     render(<JobList {...defaultProps} jobs={jobs} total={2} />)
 
-    expect(screen.getByText('#abc12345')).toBeInTheDocument()
-    expect(screen.getByText('#def12345')).toBeInTheDocument()
-    expect(screen.getByText('Analítica de Engagement')).toBeInTheDocument()
-    expect(screen.getByText('Desglose de Ingresos')).toBeInTheDocument()
-    expect(screen.getByText('Completado')).toBeInTheDocument()
-    expect(screen.getByText('Pendiente')).toBeInTheDocument()
+    // Elements appear in both mobile card and desktop table views
+    expect(screen.getAllByText('#abc12345')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('#def12345')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Analítica de Engagement')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Desglose de Ingresos')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Completado')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Pendiente')[0]).toBeInTheDocument()
   })
 
   it('renders table headers', () => {
@@ -73,10 +74,11 @@ describe('JobList', () => {
     ]
     render(<JobList {...defaultProps} jobs={jobs} total={4} />)
 
-    expect(screen.getByText('Descargar')).toBeInTheDocument()
-    expect(screen.getByText('Ver Log')).toBeInTheDocument()
-    expect(screen.getByText('En Cola')).toBeInTheDocument()
-    expect(screen.getByText('Ver Error')).toBeInTheDocument()
+    // Actions appear in both mobile card and desktop table views
+    expect(screen.getAllByText('Descargar')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Ver Log')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('En Cola')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Ver Error')[0]).toBeInTheDocument()
   })
 
   it('shows pagination info', () => {
@@ -115,5 +117,61 @@ describe('JobList', () => {
     const jobs = [mockJob()]
     render(<JobList {...defaultProps} jobs={jobs} total={1} hasNext={false} />)
     expect(screen.getByText('Siguiente')).toBeDisabled()
+  })
+
+  it('shows priority badge "Estándar" in Ver Log popover for standard-priority job', async () => {
+    const user = userEvent.setup()
+    const jobs = [mockJob({ status: 'PROCESSING', report_type: 'engagement_analytics' })]
+    render(<JobList {...defaultProps} jobs={jobs} total={1} />)
+
+    const verLogBtns = screen.getAllByText('Ver Log')
+    await user.click(verLogBtns[0] as HTMLElement)
+    expect(screen.getByText('Estándar')).toBeInTheDocument()
+    expect(screen.getByText('Prioridad Estándar', { exact: false })).toBeInTheDocument()
+  })
+
+  it('shows priority badge "⚡ Alta" in Ver Log popover for high-priority job', async () => {
+    const user = userEvent.setup()
+    const jobs = [mockJob({ status: 'PROCESSING', report_type: 'revenue_breakdown' })]
+    render(<JobList {...defaultProps} jobs={jobs} total={1} />)
+
+    const verLogBtns = screen.getAllByText('Ver Log')
+    await user.click(verLogBtns[0] as HTMLElement)
+    expect(screen.getByText('⚡ Alta')).toBeInTheDocument()
+    expect(screen.getByText('Prioridad Alta', { exact: false })).toBeInTheDocument()
+  })
+
+  it('shows Circuit Breaker info in Ver Error popover for failing_report', async () => {
+    const user = userEvent.setup()
+    const jobs = [mockJob({ status: 'FAILED', report_type: 'failing_report' })]
+    render(<JobList {...defaultProps} jobs={jobs} total={1} />)
+
+    const verErrorBtns = screen.getAllByText('Ver Error')
+    await user.click(verErrorBtns[0] as HTMLElement)
+    expect(screen.getByText('Circuit Breaker activado')).toBeInTheDocument()
+    expect(screen.getByText(/3 fallos consecutivos/)).toBeInTheDocument()
+    expect(screen.getByText(/Los demás tipos de reporte no se ven afectados/)).toBeInTheDocument()
+  })
+
+  it('shows DLQ info in Ver Error popover for non-failing_report', async () => {
+    const user = userEvent.setup()
+    const jobs = [mockJob({ status: 'FAILED', report_type: 'growth_summary' })]
+    render(<JobList {...defaultProps} jobs={jobs} total={1} />)
+
+    const verErrorBtns = screen.getAllByText('Ver Error')
+    await user.click(verErrorBtns[0] as HTMLElement)
+    expect(screen.getByText('Reintentos agotados')).toBeInTheDocument()
+    expect(screen.getByText(/Dead Letter Queue/)).toBeInTheDocument()
+  })
+
+  it('shows queue priority info in Ver Error popover', async () => {
+    const user = userEvent.setup()
+    const jobs = [mockJob({ status: 'FAILED', report_type: 'revenue_breakdown' })]
+    render(<JobList {...defaultProps} jobs={jobs} total={1} />)
+
+    const verErrorBtns = screen.getAllByText('Ver Error')
+    await user.click(verErrorBtns[0] as HTMLElement)
+    expect(screen.getByText('⚡ Alta')).toBeInTheDocument()
+    expect(screen.getByText('Prioridad Alta', { exact: false })).toBeInTheDocument()
   })
 })

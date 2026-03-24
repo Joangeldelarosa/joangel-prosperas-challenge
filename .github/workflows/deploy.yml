@@ -199,9 +199,12 @@ jobs:
         run: |
           echo "API URL: ${{ needs.deploy-infra.outputs.api_url }}"
           for i in $(seq 1 5); do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ needs.deploy-infra.outputs.api_url }}/docs" || true)
+            RESPONSE=$(curl -s -w "\n%{http_code}" "${{ needs.deploy-infra.outputs.api_url }}/health" || true)
+            HTTP_STATUS=$(echo "$RESPONSE" | tail -1)
+            BODY=$(echo "$RESPONSE" | head -1)
             if [ "$HTTP_STATUS" = "200" ]; then
               echo "API is healthy (HTTP $HTTP_STATUS)"
+              echo "$BODY"
               exit 0
             fi
             echo "Attempt $i: HTTP $HTTP_STATUS — retrying in 15s..."

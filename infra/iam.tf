@@ -60,12 +60,15 @@ resource "aws_iam_role_policy" "ecs_task" {
           "sqs:SendMessage",
           "sqs:ReceiveMessage",
           "sqs:DeleteMessage",
+          "sqs:ChangeMessageVisibility",
           "sqs:GetQueueUrl",
           "sqs:GetQueueAttributes",
         ]
         Resource = [
           aws_sqs_queue.report_jobs.arn,
           aws_sqs_queue.report_jobs_dlq.arn,
+          aws_sqs_queue.report_jobs_high.arn,
+          aws_sqs_queue.report_jobs_high_dlq.arn,
         ]
       },
       {
@@ -75,6 +78,19 @@ resource "aws_iam_role_policy" "ecs_task" {
           "s3:GetObject",
         ]
         Resource = "${aws_s3_bucket.reports.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:HeadBucket"]
+        Resource = aws_s3_bucket.reports.arn
+      },
+      {
+        Effect = "Allow"
+        Action = ["dynamodb:DescribeTable"]
+        Resource = [
+          aws_dynamodb_table.jobs.arn,
+          aws_dynamodb_table.users.arn,
+        ]
       },
     ]
   })

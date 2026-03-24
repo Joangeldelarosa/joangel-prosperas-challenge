@@ -16,14 +16,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading, err
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isRegister) {
-      await onRegister(username, password).catch(() => {});
+      await onRegister(username, password);
     } else {
-      await onLogin(username, password).catch(() => {});
+      await onLogin(username, password);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4 py-8 sm:p-4">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,19 +35,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading, err
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1, duration: 0.5 }}
-          className="text-center mb-10"
+          className="text-center mb-6 sm:mb-10"
         >
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container shadow-lg mb-4">
-            <span className="material-symbols-outlined text-white text-2xl">analytics</span>
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container shadow-lg mb-3 sm:mb-4">
+            <span className="material-symbols-outlined text-white text-xl sm:text-2xl">analytics</span>
           </div>
-          <h1 className="font-black text-3xl tracking-tighter text-black uppercase">Prosperas</h1>
+          <h1 className="font-black text-2xl sm:text-3xl tracking-tighter text-black uppercase">Prosperas</h1>
           <p className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/60 uppercase mt-1">Reports Challenge</p>
         </motion.div>
 
         {/* Card */}
         <motion.div
           layout
-          className="bg-surface-container-lowest rounded-2xl p-10 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-outline-variant/10"
+          className="bg-surface-container-lowest rounded-2xl p-5 sm:p-8 lg:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-outline-variant/10"
         >
           <AnimatePresence mode="wait">
             <motion.div

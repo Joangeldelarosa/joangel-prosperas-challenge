@@ -117,6 +117,20 @@ class TestQueueService:
         url = queue_service.queue_url
         assert "report-jobs" in url
 
+    def test_high_priority_queue_url_resolved(self):
+        """High-priority queue URL should be resolved from SQS."""
+        url = queue_service.high_priority_queue_url
+        assert "report-jobs-high" in url
+
+    def test_publish_high_priority_routes_correctly(self, test_user_id):
+        """revenue_breakdown should route to the high-priority queue without error."""
+        queue_service.publish_job(
+            job_id=str(uuid.uuid4()),
+            user_id=test_user_id,
+            report_type="revenue_breakdown",
+            parameters={"format": "pdf"},
+        )
+
 
 class TestUserService:
     def test_register_user(self):

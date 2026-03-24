@@ -22,11 +22,11 @@ export function useAuth() {
     try {
       const response = await authApi.login({ username, password });
       localStorage.setItem('token', response.token);
+      localStorage.setItem('username', response.username);
       setAuthState({ token: response.token, userId: null, isAuthenticated: true });
     } catch (err: unknown) {
-      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Error al iniciar sesión';
+      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Credenciales incorrectas';
       setError(message);
-      throw err;
     } finally {
       setLoading(false);
     }
@@ -39,11 +39,11 @@ export function useAuth() {
       const response = await authApi.register({ username, password });
       localStorage.setItem('token', response.token);
       localStorage.setItem('user_id', response.user_id);
+      localStorage.setItem('username', response.username);
       setAuthState({ token: response.token, userId: response.user_id, isAuthenticated: true });
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Error al registrarse';
       setError(message);
-      throw err;
     } finally {
       setLoading(false);
     }
@@ -52,6 +52,7 @@ export function useAuth() {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('username');
     setAuthState({ token: null, userId: null, isAuthenticated: false });
   }, []);
 

@@ -43,6 +43,7 @@ jobs:
           JWT_SECRET_KEY: test-secret-key-ci
           SQS_QUEUE_NAME: report-jobs
           SQS_DLQ_NAME: report-jobs-dlq
+          SQS_HIGH_PRIORITY_QUEUE_NAME: report-jobs-high
           DYNAMODB_JOBS_TABLE: jobs
           DYNAMODB_USERS_TABLE: users
           S3_BUCKET_NAME: report-results

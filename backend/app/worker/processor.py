@@ -48,6 +48,7 @@ REPORT_TITLES = {
     "engagement_analytics": "Analítica de Engagement",
     "revenue_breakdown": "Desglose de Ingresos",
     "growth_summary": "Resumen de Crecimiento",
+    "failing_report": "Reporte de Prueba (Fallo Simulado)",
 }
 
 
@@ -228,6 +229,10 @@ def process_job(
     job_service.update_job_status(job_id, "PROCESSING")
 
     try:
+        # Deliberate failure for circuit breaker demonstration
+        if report_type == "failing_report":
+            raise RuntimeError(f"Deliberate failure for report_type=failing_report (job {job_id})")
+
         # Simulate CPU-bound processing
         sleep_seconds = random.randint(5, 30)
         logger.info(

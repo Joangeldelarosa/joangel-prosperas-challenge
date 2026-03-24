@@ -36,21 +36,21 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="lg:col-span-5 p-8 lg:p-10 border-r border-outline-variant/10 bg-surface-container-lowest"
+      className="lg:col-span-5 p-4 sm:p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-outline-variant/10 bg-surface-container-lowest"
     >
-      <div className="mb-8">
+      <div className="mb-5 sm:mb-8">
         <div className="flex items-center gap-2.5 mb-2">
           <div className="w-8 h-8 rounded-lg bg-surface-tint/10 flex items-center justify-center">
             <span className="material-symbols-outlined text-surface-tint text-[18px]">add_chart</span>
           </div>
-          <h2 className="text-xl font-black tracking-tight text-primary">Solicitar Reporte</h2>
+          <h2 className="text-lg sm:text-xl font-black tracking-tight text-primary">Solicitar Reporte</h2>
         </div>
-        <p className="text-sm text-on-surface-variant leading-relaxed pl-[42px]">
+        <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed pl-[42px]">
           Configura los parámetros para generar un análisis personalizado.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-7">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
         {/* Report Type */}
         <div className="space-y-2.5">
           <label className="text-[10px] font-black tracking-[0.1em] text-on-surface-variant uppercase flex items-center gap-1.5">
@@ -156,14 +156,14 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit, loading }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-10 p-5 rounded-xl bg-surface-tint/[0.04] border border-surface-tint/10"
+        className="mt-6 sm:mt-10 p-4 sm:p-5 rounded-xl bg-surface-tint/[0.04] border border-surface-tint/10"
       >
         <div className="flex items-start gap-3">
           <span className="material-symbols-outlined text-surface-tint mt-0.5 text-[18px]">info</span>
           <div>
             <p className="text-[10px] font-black text-on-surface uppercase tracking-wider mb-1">Estado de la Cola</p>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Los reportes se procesan de forma asíncrona. El progreso se actualiza automáticamente en tiempo real.
+              Los reportes se procesan de forma asíncrona. El estado se actualiza en tiempo real vía WebSocket.
             </p>
           </div>
         </div>

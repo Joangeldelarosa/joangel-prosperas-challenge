@@ -41,6 +41,7 @@ resource "aws_ecs_task_definition" "api" {
       { name = "AWS_REGION", value = var.aws_region },
       { name = "SQS_QUEUE_NAME", value = aws_sqs_queue.report_jobs.name },
       { name = "SQS_DLQ_NAME", value = aws_sqs_queue.report_jobs_dlq.name },
+      { name = "SQS_HIGH_PRIORITY_QUEUE_NAME", value = aws_sqs_queue.report_jobs_high.name },
       { name = "DYNAMODB_JOBS_TABLE", value = aws_dynamodb_table.jobs.name },
       { name = "DYNAMODB_USERS_TABLE", value = aws_dynamodb_table.users.name },
       { name = "S3_BUCKET_NAME", value = aws_s3_bucket.reports.id },
@@ -77,12 +78,17 @@ resource "aws_ecs_task_definition" "worker" {
       { name = "AWS_REGION", value = var.aws_region },
       { name = "SQS_QUEUE_NAME", value = aws_sqs_queue.report_jobs.name },
       { name = "SQS_DLQ_NAME", value = aws_sqs_queue.report_jobs_dlq.name },
+      { name = "SQS_HIGH_PRIORITY_QUEUE_NAME", value = aws_sqs_queue.report_jobs_high.name },
       { name = "DYNAMODB_JOBS_TABLE", value = aws_dynamodb_table.jobs.name },
       { name = "DYNAMODB_USERS_TABLE", value = aws_dynamodb_table.users.name },
       { name = "S3_BUCKET_NAME", value = aws_s3_bucket.reports.id },
       { name = "JWT_SECRET_KEY", value = var.jwt_secret_key },
       { name = "WORKER_CONCURRENCY", value = "2" },
       { name = "WORKER_POLL_INTERVAL", value = "5" },
+      { name = "RETRY_BASE_DELAY", value = "10" },
+      { name = "RETRY_MAX_DELAY", value = "120" },
+      { name = "CIRCUIT_BREAKER_THRESHOLD", value = "3" },
+      { name = "CIRCUIT_BREAKER_TIMEOUT", value = "60" },
     ]
     logConfiguration = {
       logDriver = "awslogs"

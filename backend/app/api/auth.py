@@ -11,11 +11,11 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 def register(request: AuthRequest):
     user = user_service.register(request.username, request.password)
     token = create_access_token(user.user_id)
-    return AuthResponse(user_id=user.user_id, token=token)
+    return AuthResponse(user_id=user.user_id, token=token, username=user.username)
 
 
 @router.post("/login", response_model=LoginResponse)
 def login(request: AuthRequest):
     user = user_service.authenticate(request.username, request.password)
     token = create_access_token(user.user_id)
-    return LoginResponse(token=token)
+    return LoginResponse(token=token, username=user.username)

@@ -21,10 +21,11 @@ describe('JobForm', () => {
     expect(select).toBeInTheDocument()
 
     const options = screen.getAllByRole('option')
-    expect(options).toHaveLength(3)
+    expect(options).toHaveLength(4)
     expect(options[0]).toHaveTextContent('Analítica de Engagement')
     expect(options[1]).toHaveTextContent('Desglose de Ingresos')
     expect(options[2]).toHaveTextContent('Resumen de Crecimiento')
+    expect(options[3]).toHaveTextContent('Reporte de Prueba (Fallo)')
   })
 
   it('renders format radio buttons (PDF, CSV, JSON)', () => {

@@ -38,7 +38,7 @@ def decode_access_token(token: str) -> dict:
     except JWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            detail="Token inválido o expirado",
         ) from e
 
 
@@ -51,6 +51,6 @@ def get_current_user(
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
+            detail="Token inválido",
         )
     return user_id

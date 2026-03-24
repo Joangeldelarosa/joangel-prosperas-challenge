@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { jobsApi } from '../services/api';
+import { WS_URL } from '../config';
 import type { Job, JobListResponse } from '../types';
 
-export function useJobs(pollInterval = 5000) {
+const WS_RECONNECT_BASE = 1000;
+const WS_RECONNECT_MAX = 30000;
+
+export function useJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -10,7 +14,9 @@ export function useJobs(pollInterval = 5000) {
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectAttempt = useRef(0);
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchJobs = useCallback(async (pageNum?: number) => {
     const targetPage = pageNum ?? page;
@@ -25,27 +31,75 @@ export function useJobs(pollInterval = 5000) {
         setPage(pageNum);
       }
     } catch (err: unknown) {
-      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Failed to fetch jobs';
+      const message = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Error al obtener los reportes';
       setError(message);
     } finally {
       setLoading(false);
     }
   }, [page, perPage]);
 
-  // Initial fetch + polling
+  // WebSocket connection
   useEffect(() => {
-    fetchJobs();
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-    intervalRef.current = setInterval(() => {
-      fetchJobs();
-    }, pollInterval);
+    const connect = () => {
+      const ws = new WebSocket(`${WS_URL}/ws/jobs?token=${token}`);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        reconnectAttempt.current = 0;
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'job_update' && data.job) {
+            setJobs(prev => prev.map(j => 
+              j.job_id === data.job.job_id ? { ...j, ...data.job } : j
+            ));
+          }
+        } catch {
+          // Ignore malformed messages
+        }
+      };
+
+      ws.onclose = (event) => {
+        wsRef.current = null;
+        // Don't reconnect if closed intentionally (4001 = auth error)
+        if (event.code === 4001) return;
+        
+        // Exponential backoff reconnection
+        const delay = Math.min(
+          WS_RECONNECT_BASE * Math.pow(2, reconnectAttempt.current),
+          WS_RECONNECT_MAX,
+        );
+        reconnectAttempt.current += 1;
+        reconnectTimer.current = setTimeout(connect, delay);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    };
+
+    connect();
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
       }
     };
-  }, [fetchJobs, pollInterval]);
+  }, []);
+
+  // Initial fetch only (no polling interval)
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const nextPage = useCallback(() => {
     if (hasNext) {

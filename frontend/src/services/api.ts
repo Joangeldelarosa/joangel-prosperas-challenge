@@ -16,13 +16,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor — handle 401 globally
+// Response interceptor — handle 401 globally (skip auth endpoints)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const url = error.config?.url || '';
+    const isAuthRoute = url.includes('/api/auth/');
+    if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem('token');
       localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
       window.location.reload();
     }
     return Promise.reject(error);

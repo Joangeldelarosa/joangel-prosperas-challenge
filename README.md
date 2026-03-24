@@ -1,8 +1,11 @@
 # Prosperas — Async Report Processing System
 
 [![CI — Lint & Test](https://github.com/Joangeldelarosa/joangel-prosperas-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/Joangeldelarosa/joangel-prosperas-challenge/actions/workflows/ci.yml)
+[![Deploy to AWS](https://github.com/Joangeldelarosa/joangel-prosperas-challenge/actions/workflows/deploy.yml/badge.svg)](https://github.com/Joangeldelarosa/joangel-prosperas-challenge/actions/workflows/deploy.yml)
 
 > Sistema de procesamiento asíncrono de reportes construido con FastAPI, React, y servicios AWS (SQS, DynamoDB, S3, ECS Fargate).
+
+**Producción**: <!-- URL_PRODUCCION --> *(se actualiza tras el primer deploy)*
 
 ---
 
@@ -116,10 +119,10 @@ make clean          # Clean build artifacts
 ## Testing
 
 ```bash
-# Backend — 48 tests (unit + integration)
+# Backend — 78+ tests (unit + integration)
 cd backend && pytest tests/ -v --cov=app
 
-# Frontend
+# Frontend — 50+ tests (component + hook)
 cd frontend && npm test
 ```
 
@@ -133,6 +136,16 @@ Tests use [moto](https://github.com/getmoto/moto) to mock AWS services — no ru
 |----------|---------|--------|
 | `ci.yml` | Push to `main` | Lint (ruff + eslint) → Test (pytest + vitest) |
 | `deploy.yml` | Push to `main` | CI → Build & Push ECR → Terraform Apply → Deploy ECS → Deploy Frontend (S3 + CloudFront) → Health Check |
+
+### ¿Por qué este diseño?
+
+Se separaron **dos workflows** para mantener feedback rápido y deploy seguro:
+
+- **`ci.yml` como gate de calidad**: Lint + tests corren en ~2 min. Si fallan, no se despliega. Esto evita romper producción por errores que un pipeline monolítico detectaría demasiado tarde.
+- **`deploy.yml` secuencial con dependencias**: Cada stage depende del anterior (CI → ECR → Terraform → ECS → Frontend → Health Check). Si cualquier paso falla, el pipeline se detiene. Esto da rollback implícito — la versión anterior sigue corriendo en ECS hasta que el nuevo deploy pase el health check.
+- **Terraform como IaC** en el pipeline: La infraestructura se versiona junto al código. Un `terraform plan` en CI muestra drift antes de aplicar cambios, reduciendo errores humanos.
+- **Health check final**: Después de desplegar, el pipeline verifica `GET /health` en la URL pública. Si el endpoint no responde 200, el deploy se marca como fallido y se investiga — el servicio anterior sigue activo gracias a ECS rolling deployment.
+- **Frontend separado del backend**: El frontend se construye como archivos estáticos (Vite build) y se sube a S3 + CloudFront. Esto desacopla los ciclos de deploy y permite invalidar cache de CDN sin tocar ECS.
 
 ### Required GitHub Secrets
 

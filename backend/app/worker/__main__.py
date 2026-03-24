@@ -1,14 +1,10 @@
 import logging
 import signal
-import sys
 
+from app.core.logging_config import setup_logging
 from app.worker.consumer import Consumer
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
-    stream=sys.stdout,
-)
+setup_logging()
 
 logger = logging.getLogger("app.worker")
 

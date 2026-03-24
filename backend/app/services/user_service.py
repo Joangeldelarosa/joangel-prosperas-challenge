@@ -16,7 +16,7 @@ class UserService:
             ExpressionAttributeValues={":u": username},
         )
         if response.get("Items"):
-            raise ConflictError("Username already exists")
+            raise ConflictError("El nombre de usuario ya está en uso")
 
         user = User(
             user_id=str(uuid.uuid4()),

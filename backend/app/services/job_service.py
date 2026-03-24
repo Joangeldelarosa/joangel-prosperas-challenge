@@ -26,7 +26,7 @@ class JobService:
         response = table.get_item(Key={"job_id": job_id})
         item = response.get("Item")
         if not item or item.get("user_id") != user_id:
-            raise NotFoundError("Job not found")
+            raise NotFoundError("Trabajo no encontrado")
         return Job.from_dict(item)
 
     def list_jobs(self, user_id: str, page: int = 1, per_page: int = 20) -> dict:

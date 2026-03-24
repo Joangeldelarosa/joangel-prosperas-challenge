@@ -50,7 +50,7 @@ class TestCreateJobRequest:
             )
 
     def test_all_valid_report_types(self):
-        for rt in ["engagement_analytics", "revenue_breakdown", "growth_summary"]:
+        for rt in ["engagement_analytics", "revenue_breakdown", "growth_summary", "failing_report"]:
             req = CreateJobRequest(
                 report_type=rt,
                 date_range=DateRange(start="2025-01-01", end="2025-12-31"),

@@ -49,7 +49,7 @@ const ErrorNotification: React.FC<ErrorNotificationProps> = ({ message, type = '
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -12, scale: 0.95 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className={`fixed top-4 right-4 z-50 max-w-sm p-4 rounded-xl border shadow-lg backdrop-blur-sm ${colors[type]}`}
+          className={`fixed top-3 left-3 right-3 sm:left-auto sm:right-4 sm:top-4 z-50 sm:max-w-sm p-3 sm:p-4 rounded-xl border shadow-lg backdrop-blur-sm ${colors[type]}`}
         >
           <div className="flex items-start gap-3">
             <span className="material-symbols-outlined text-lg mt-0.5">{icons[type]}</span>

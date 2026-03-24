@@ -36,7 +36,7 @@ graph TB
     subgraph Frontend["Frontend - React 18 + Vite + Tailwind"]
         SPA["SPA React Router"]
         AuthCtx["Auth Context - JWT Storage"]
-        PollHook["useJobs Hook - Polling cada 3-5s"]
+        WSHook["useJobs Hook - WebSocket Push"]
         AxiosInt["Axios Client - JWT Interceptor"]
     end
 
@@ -49,17 +49,22 @@ graph TB
         JobSvc["JobService"]
         QueueSvc["QueueService"]
         ExcH["Global Exception Handlers"]
+        HealthR["/health - Dependency Check"]
+        WSEndpoint["/ws/jobs - WebSocket Push"]
     end
 
     subgraph Worker["Worker - Mismo Docker image"]
         SQSPoll["SQS Polling Loop"]
         Processor["Report Processor - sleep 5-30s"]
-        Concurrent["Concurrent Processing x2"]
+        Concurrent["ThreadPoolExecutor x2"]
+        CircuitBrk["Circuit Breaker - per report_type"]
     end
 
     subgraph AWS["Servicios AWS / LocalStack"]
         SQS["SQS Standard Queue - report-jobs"]
         DLQ["SQS Dead Letter Queue - report-jobs-dlq"]
+        SQS_HIGH["SQS High-Priority - report-jobs-high"]
+        DLQ_HIGH["SQS DLQ - report-jobs-high-dlq"]
         DDB_Jobs["DynamoDB - jobs"]
         DDB_Users["DynamoDB - users"]
         S3["S3 - report-results"]
@@ -67,8 +72,9 @@ graph TB
 
     Browser --> SPA
     SPA --> AuthCtx
-    SPA --> PollHook
-    PollHook --> AxiosInt
+    SPA --> WSHook
+    WSHook --> AxiosInt
+    WSHook -->|"WebSocket"| CORS
     AuthCtx --> AxiosInt
     AxiosInt -->|"HTTP + Bearer JWT"| CORS
 
@@ -82,11 +88,15 @@ graph TB
     UserSvc -->|"Read/Write"| DDB_Users
     JobSvc -->|"Read/Write"| DDB_Jobs
     QueueSvc -->|"SendMessage"| SQS
+    QueueSvc -->|"SendMessage (HIGH)"| SQS_HIGH
 
     SQS -->|"ReceiveMessage"| SQSPoll
     SQS -->|"Tras 3 fallos"| DLQ
+    SQS_HIGH -->|"ReceiveMessage (primero)"| SQSPoll
+    SQS_HIGH -->|"Tras 3 fallos"| DLQ_HIGH
     SQSPoll --> Concurrent
-    Concurrent --> Processor
+    Concurrent --> CircuitBrk
+    CircuitBrk --> Processor
     Processor -->|"UpdateItem status"| DDB_Jobs
     Processor -->|"PutObject report"| S3
 
@@ -113,6 +123,8 @@ graph TB
         Worker_Task["ECS Fargate - Worker Service"]
         SQS_P["SQS report-jobs"]
         SQS_DLQ["SQS report-jobs-dlq"]
+        SQS_H["SQS report-jobs-high"]
+        SQS_HDLQ["SQS report-jobs-high-dlq"]
         DDB["DynamoDB - jobs, users"]
         S3_R["S3 report-results"]
         ECR["ECR Docker Registry"]
@@ -127,6 +139,9 @@ graph TB
     API_Task --> DDB
     SQS_P --> Worker_Task
     SQS_P -->|"maxReceiveCount=3"| SQS_DLQ
+    API_Task --> SQS_H
+    SQS_H --> Worker_Task
+    SQS_H -->|"maxReceiveCount=3"| SQS_HDLQ
     Worker_Task --> DDB
     Worker_Task --> S3_R
     ECR -.->|"Pull image"| API_Task
@@ -688,6 +703,7 @@ Todas las variables se definen en `.env.example` con valores de desarrollo. En p
 | **SQS** | | | |
 | `SQS_QUEUE_NAME` | Nombre de la cola principal de jobs | `report-jobs` | `report-jobs` |
 | `SQS_DLQ_NAME` | Nombre de la Dead Letter Queue | `report-jobs-dlq` | `report-jobs-dlq` |
+| `SQS_HIGH_PRIORITY_QUEUE_NAME` | Nombre de la cola de alta prioridad para reportes financieros | `report-jobs-high` | `report-jobs-high` |
 | `SQS_MAX_RECEIVE_COUNT` | Intentos antes de mover mensaje a DLQ. Configurado en redrive policy del init script | `3` | `3` |
 | **DynamoDB** | | | |
 | `DYNAMODB_JOBS_TABLE` | Nombre de la tabla de jobs | `jobs` | `jobs` |
@@ -699,6 +715,12 @@ Todas las variables se definen en `.env.example` con valores de desarrollo. En p
 | **Worker** | | | |
 | `WORKER_CONCURRENCY` | Número de mensajes que el worker procesa en paralelo | `2` | `2` |
 | `WORKER_POLL_INTERVAL` | Segundos entre cada ciclo de polling a SQS | `5` | `5` |
+| **Retry** | | | |
+| `RETRY_BASE_DELAY` | Delay base en segundos para el primer reintento (backoff exponencial: base × 2^(n-1)) | `10` | `10` |
+| `RETRY_MAX_DELAY` | Delay máximo en segundos — cap del backoff exponencial | `120` | `120` |
+| **Circuit Breaker** | | | |
+| `CIRCUIT_BREAKER_THRESHOLD` | Fallos consecutivos para abrir el circuito de un `report_type` | `3` | `3` |
+| `CIRCUIT_BREAKER_TIMEOUT` | Segundos que el circuito permanece OPEN antes de transicionar a HALF_OPEN | `60` | `60` |
 | **S3** | | | |
 | `S3_BUCKET_NAME` | Bucket donde se almacenan los reportes generados | `report-results` | `report-results` |
 | **Frontend** | | | |
@@ -753,14 +775,15 @@ make test
 
 ### 10.2 Qué cubre cada suite
 
-| Suite | Qué prueba | Dependencias | Archivos clave |
-|-------|-----------|:------------:|----------------|
-| `tests/unit/test_models.py` | Validación Pydantic, serialización `to_dict`/`from_dict`, campos requeridos, regex de `report_type` y `format` | Ninguna | `models/job.py`, `models/user.py`, `models/schemas.py` |
-| `tests/unit/test_services.py` | Lógica de negocio: creación de jobs, autenticación, hashing — con mocks de DynamoDB | moto (mock AWS) | `services/job_service.py`, `services/user_service.py` |
-| `tests/unit/test_worker.py` | Procesamiento del worker, manejo de fallos, simulación de procesamiento | moto (mock AWS) | `worker/processor.py`, `worker/consumer.py` |
-| `tests/integration/test_api.py` | Endpoints completos: register → login → create job → list jobs. Valida HTTP status codes, response schemas, auth flows | LocalStack o moto | `api/auth.py`, `api/jobs.py` |
-| `tests/integration/test_worker.py` | Pipeline end-to-end: POST /jobs → SQS → Worker consume → DynamoDB actualizado → S3 upload | LocalStack | Todo el pipeline |
-| `frontend/src/**/*.test.tsx` | Renderizado de componentes, interacción de usuario, hooks de polling, manejo de errores en UI | jsdom + React Testing Library | Componentes React |
+| Suite | Qué prueba | Tests | Archivos clave |
+|-------|-----------|:-----:|----------------|
+| `tests/unit/test_models.py` | Validación Pydantic, serialización `to_dict`/`from_dict`, regex de `report_type` (incluye `failing_report`) | 10 | `models/schemas.py` |
+| `tests/unit/test_services.py` | Lógica de negocio: CRUD jobs, autenticación, hashing, queue publish | 12 | `services/job_service.py`, `services/queue_service.py` |
+| `tests/unit/test_worker.py` | Procesamiento de reportes, fallo de `failing_report`, cálculo de backoff exponencial | 11 | `worker/processor.py` |
+| `tests/unit/test_circuit_breaker.py` | Estados CLOSED→OPEN→HALF_OPEN, timeout, independencia por `report_type` | 10 | `worker/circuit_breaker.py` |
+| `tests/unit/test_consumer.py` | HandleMessage (éxito/fallo/circuit breaker), cleanup de futures, poll vacío | 6 | `worker/consumer.py` |
+| `tests/integration/test_api.py` | Endpoints completos: auth, jobs, health, priority queue routing, username en response | 21 | `api/auth.py`, `api/jobs.py`, `api/health.py` |
+| `frontend/src/**/*.test.tsx` | Renderizado de componentes, interacción, hooks, manejo de errores en UI | 44 | Componentes React |
 
 ### 10.3 Configuración de cobertura
 
@@ -799,11 +822,14 @@ joangel-prosperas-challenge/
 │   ├── app/
 │   │   ├── api/                  # Routers FastAPI — endpoints HTTP
 │   │   │   ├── auth.py           #   POST /api/auth/register, /login
-│   │   │   └── jobs.py           #   POST/GET /api/jobs
+│   │   │   ├── jobs.py           #   POST/GET /api/jobs
+│   │   │   ├── health.py         #   GET /health — dependency check endpoint
+│   │   │   └── websocket.py      #   WS /ws/jobs — WebSocket push notifications
 │   │   ├── core/                 # Infraestructura de la aplicación
 │   │   │   ├── config.py         #   Settings con pydantic-settings (.env)
 │   │   │   ├── database.py       #   Conexión DynamoDB (boto3 resource)
 │   │   │   ├── exceptions.py     #   Jerarquía AppException + handlers globales
+│   │   │   ├── logging_config.py #   Structured JSON logging (JSONFormatter)
 │   │   │   └── security.py       #   JWT encode/decode, bcrypt, get_current_user
 │   │   ├── models/               # Modelos de datos
 │   │   │   ├── job.py            #   Dataclass Job (to_dict / from_dict)
@@ -815,17 +841,20 @@ joangel-prosperas-challenge/
 │   │   │   └── user_service.py   #   Registro y autenticación
 │   │   ├── worker/               # Consumer asíncrono de SQS
 │   │   │   ├── consumer.py       #   Polling loop con ThreadPoolExecutor
+│   │   │   ├── circuit_breaker.py #  CircuitBreaker pattern (per report_type)
 │   │   │   ├── processor.py      #   Simulación de procesamiento + S3 upload
 │   │   │   └── __main__.py       #   Entrypoint del worker
 │   │   └── main.py               # App entry: FastAPI + CORS + routers + error handlers
 │   ├── tests/
 │   │   ├── conftest.py           # Fixtures: moto mock_aws, DynamoDB tables, SQS, S3
 │   │   ├── unit/
-│   │   │   ├── test_models.py    #   11 tests: Pydantic schemas, dataclass serialization
-│   │   │   ├── test_services.py  #   15 tests: job/user services con moto
-│   │   │   └── test_worker.py    #   6 tests: processor, report generation
+│   │   │   ├── test_models.py    #   10 tests: Pydantic schemas, dataclass serialization
+│   │   │   ├── test_services.py  #   12 tests: job/user services con moto
+│   │   │   ├── test_worker.py    #   11 tests: processor, failing_report, backoff
+│   │   │   ├── test_circuit_breaker.py # 10 tests: CLOSED/OPEN/HALF_OPEN states
+│   │   │   └── test_consumer.py  #   6 tests: message handling, cleanup, poll
 │   │   └── integration/
-│   │       └── test_api.py       #   14 tests: endpoints completos via TestClient
+│   │       └── test_api.py       #   21 tests: endpoints + health + priority routing
 │   ├── Dockerfile                # Multi-stage: builder → runtime (python:3.11-slim)
 │   ├── requirements.txt          # Dependencias pinned
 │   ├── pyproject.toml            # Config pytest, coverage, proyecto
@@ -835,7 +864,7 @@ joangel-prosperas-challenge/
 │   │   ├── App.tsx               # Componente raíz con auth state
 │   │   ├── main.tsx              # Entry point React
 │   │   ├── index.css             # Tailwind directives
-│   │   ├── config.ts             # Env vars (VITE_API_URL)
+│   │   ├── config.ts             # Env vars (VITE_API_URL, WS_URL)
 │   │   ├── types/index.ts        # TypeScript interfaces
 │   │   ├── components/           # UI Components
 │   │   │   ├── Layout.tsx        #   Header + footer con brand
@@ -848,7 +877,7 @@ joangel-prosperas-challenge/
 │   │   │   └── ErrorNotification.tsx # Toast de errores
 │   │   ├── hooks/
 │   │   │   ├── useAuth.ts        #   Login/register/logout con localStorage
-│   │   │   └── useJobs.ts        #   Polling cada 5s + paginación
+│   │   │   └── useJobs.ts        #   WebSocket push + REST fallback
 │   │   └── services/
 │   │       └── api.ts            #   Axios + JWT interceptor
 │   ├── Dockerfile                # Multi-stage (node:18-alpine → nginx:alpine)
@@ -899,11 +928,11 @@ joangel-prosperas-challenge/
 
 > Se actualiza conforme se implementa cada bonus.
 
-| Bonus | Estado | Descripción | Notas |
-|-------|:------:|-------------|-------|
-| B1 — Prioridad de mensajes | ⬜ Pendiente | Dos colas SQS (alta/estándar), routing en API según prioridad | Workers consumen de alta prioridad primero |
-| B2 — Circuit Breaker | ⬜ Pendiente | Patrón circuit breaker en worker (CLOSED → OPEN → HALF-OPEN) | Evita cascada de fallos |
-| B3 — Notificaciones en tiempo real | ⬜ Pendiente | WebSockets con FastAPI para push de cambios de estado | Reemplaza polling |
-| B4 — Retry con backoff exponencial | ⬜ Pendiente | Espera exponencial en worker antes de reintentar (1s, 2s, 4s, 8s) | Reduce presión en servicios caídos |
-| B5 — Observabilidad | ⬜ Pendiente | Structured logging (JSON), CloudWatch metrics, endpoint `/health` | Dashboards y alertas |
-| B6 — Tests avanzados | ⬜ Pendiente | Cobertura ≥ 70%, test de fallo → DLQ, test end-to-end completo | `fail_under = 70` en pyproject.toml |
+| Bonus | Estado | Descripción | Implementación |
+|-------|:------:|-------------|---------------|
+| B1 — Prioridad de mensajes | ✅ Implementado | Dos colas SQS: `report-jobs-high` (alta) y `report-jobs` (estándar). `revenue_breakdown` se enruta a HIGH. Worker prioriza HIGH (short poll) antes de consultar STANDARD (long poll). | `queue_service.py` → enrutamiento, `consumer.py` → `_poll_queue()` con priorización, `sqs.tf` → 4 colas |
+| B2 — Circuit Breaker | ✅ Implementado | Patrón por `report_type`. Tras 3 fallos consecutivos → OPEN (bloquea 60s) → HALF_OPEN (prueba 1 mensaje) → CLOSED (si éxito). Tipo `failing_report` disponible para demostración. | `circuit_breaker.py` → clase CircuitBreaker, `consumer.py` → integración en `_handle_message()` |
+| B3 — Notificaciones en tiempo real | ✅ Implementado | WebSocket en `/ws/jobs?token=JWT`. El API server detecta cambios en DynamoDB cada 2s y hace push al cliente. Frontend usa WS con reconexión exponential backoff. NO hay polling en el frontend. | `websocket.py` → ConnectionManager + endpoint, `useJobs.ts` → WebSocket client |
+| B4 — Retry con backoff exponencial | ✅ Implementado | `delay = min(base × 2^(attempt-1), max)`. Base=10s, max=120s. Intento 1→10s, 2→20s, 3→40s. Usa `change_message_visibility` de SQS. Tras 3 intentos → DLQ. | `consumer.py` → `_handle_message()` con `ApproximateReceiveCount` |
+| B5 — Observabilidad | ✅ Implementado | Structured logging JSON via `JSONFormatter` custom (sin deps externas). Endpoint `GET /health` verifica DynamoDB, SQS y S3. ALB health check apunta a `/health`. | `logging_config.py`, `health.py`, `alb.tf` |
+| B6 — Tests avanzados | ✅ Implementado | 76 backend tests + 44 frontend tests = 120 total. Cobertura backend ≥ 70% (`fail_under=70`). Tests de: circuit breaker, consumer, backoff, health, failing_report, priority routing. | `test_circuit_breaker.py`, `test_consumer.py`, `test_api.py`, `test_worker.py` |

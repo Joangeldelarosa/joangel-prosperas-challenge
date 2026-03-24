@@ -16,6 +16,7 @@ os.environ["AWS_ENDPOINT_URL"] = ""
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only"
 os.environ["SQS_QUEUE_NAME"] = "report-jobs"
 os.environ["SQS_DLQ_NAME"] = "report-jobs-dlq"
+os.environ["SQS_HIGH_PRIORITY_QUEUE_NAME"] = "report-jobs-high"
 os.environ["DYNAMODB_JOBS_TABLE"] = "jobs"
 os.environ["DYNAMODB_USERS_TABLE"] = "users"
 os.environ["S3_BUCKET_NAME"] = "report-results"
@@ -94,6 +95,21 @@ def _setup_sqs():
         Attributes={
             "RedrivePolicy": json.dumps(
                 {"deadLetterTargetArn": dlq_arn, "maxReceiveCount": "3"}
+            ),
+        },
+    )
+    # High-priority DLQ
+    high_dlq_response = client.create_queue(QueueName="report-jobs-high-dlq")
+    high_dlq_arn = client.get_queue_attributes(
+        QueueUrl=high_dlq_response["QueueUrl"],
+        AttributeNames=["QueueArn"],
+    )["Attributes"]["QueueArn"]
+    # High-priority queue with redrive
+    client.create_queue(
+        QueueName="report-jobs-high",
+        Attributes={
+            "RedrivePolicy": json.dumps(
+                {"deadLetterTargetArn": high_dlq_arn, "maxReceiveCount": "3"}
             ),
         },
     )

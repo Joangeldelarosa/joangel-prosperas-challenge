@@ -174,3 +174,90 @@ class TestJobEndpoints:
         data = response.json()
         assert data["total"] == 0
         assert data["jobs"] == []
+
+
+class TestHealthEndpoint:
+    def test_health_returns_200(self):
+        response = client.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "healthy"
+        assert "dynamodb" in data["dependencies"]
+        assert "sqs" in data["dependencies"]
+        assert "s3" in data["dependencies"]
+        assert data["dependencies"]["dynamodb"] == "healthy"
+        assert data["dependencies"]["sqs"] == "healthy"
+        assert data["dependencies"]["s3"] == "healthy"
+        assert "timestamp" in data
+
+    def test_health_no_auth_required(self):
+        """Health endpoint should work without authentication."""
+        response = client.get("/health")
+        assert response.status_code == 200
+
+
+class TestPriorityQueueRouting:
+    def test_revenue_breakdown_goes_to_high_priority(self, auth_headers):
+        """revenue_breakdown should be routed to the high-priority queue."""
+        response = client.post(
+            "/api/jobs",
+            json={
+                "report_type": "revenue_breakdown",
+                "date_range": {"start": "2025-01-01", "end": "2025-12-31"},
+                "format": "pdf",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 201
+
+    def test_engagement_analytics_goes_to_standard(self, auth_headers):
+        """Non-priority types should go to the standard queue."""
+        response = client.post(
+            "/api/jobs",
+            json={
+                "report_type": "engagement_analytics",
+                "date_range": {"start": "2025-01-01", "end": "2025-12-31"},
+                "format": "json",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 201
+
+    def test_failing_report_accepted(self, auth_headers):
+        """failing_report should be accepted as a valid report type."""
+        response = client.post(
+            "/api/jobs",
+            json={
+                "report_type": "failing_report",
+                "date_range": {"start": "2025-01-01", "end": "2025-12-31"},
+                "format": "json",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 201
+
+
+class TestAuthResponseFields:
+    def test_register_returns_username(self):
+        username = f"user_{uuid.uuid4().hex[:8]}"
+        response = client.post(
+            "/api/auth/register",
+            json={"username": username, "password": "testpass123"},
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["username"] == username
+
+    def test_login_returns_username(self):
+        username = f"user_{uuid.uuid4().hex[:8]}"
+        client.post(
+            "/api/auth/register",
+            json={"username": username, "password": "testpass123"},
+        )
+        response = client.post(
+            "/api/auth/login",
+            json={"username": username, "password": "testpass123"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["username"] == username

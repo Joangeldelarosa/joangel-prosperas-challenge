@@ -12,10 +12,12 @@ class AuthRequest(BaseModel):
 class AuthResponse(BaseModel):
     user_id: str
     token: str
+    username: str
 
 
 class LoginResponse(BaseModel):
     token: str
+    username: str
 
 
 # === Job Schemas ===
@@ -28,7 +30,7 @@ class DateRange(BaseModel):
 class CreateJobRequest(BaseModel):
     report_type: str = Field(
         ...,
-        pattern=r"^(engagement_analytics|revenue_breakdown|growth_summary)$",
+        pattern=r"^(engagement_analytics|revenue_breakdown|growth_summary|failing_report)$",
         description="Type of report to generate",
     )
     date_range: DateRange

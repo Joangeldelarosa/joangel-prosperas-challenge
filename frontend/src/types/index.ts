@@ -39,8 +39,10 @@ export interface AuthRequest {
 export interface AuthResponse {
   user_id: string;
   token: string;
+  username: string;
 }
 
 export interface LoginResponse {
   token: string;
+  username: string;
 }

@@ -69,3 +69,38 @@ class TestProcessJob:
         calls = mock_job_svc.update_job_status.call_args_list
         assert calls[0].args == ("job-fail", "PROCESSING")
         assert calls[1].args == ("job-fail", "FAILED")
+
+
+class TestFailingReport:
+    @patch("app.worker.processor.job_service")
+    def test_failing_report_raises_error(self, mock_job_svc):
+        """Circuit breaker demonstration: failing_report always fails."""
+        import pytest
+        with pytest.raises(RuntimeError, match="Deliberate failure"):
+            process_job("job-fail-cb", "user-1", "failing_report", {})
+
+        calls = mock_job_svc.update_job_status.call_args_list
+        assert calls[0].args == ("job-fail-cb", "PROCESSING")
+        assert calls[1].args == ("job-fail-cb", "FAILED")
+
+
+class TestBackoffCalculation:
+    def test_first_attempt_delay(self):
+        from app.core.config import settings
+        delay = min(settings.retry_base_delay * (2 ** (1 - 1)), settings.retry_max_delay)
+        assert delay == 10
+
+    def test_second_attempt_delay(self):
+        from app.core.config import settings
+        delay = min(settings.retry_base_delay * (2 ** (2 - 1)), settings.retry_max_delay)
+        assert delay == 20
+
+    def test_third_attempt_delay(self):
+        from app.core.config import settings
+        delay = min(settings.retry_base_delay * (2 ** (3 - 1)), settings.retry_max_delay)
+        assert delay == 40
+
+    def test_delay_caps_at_max(self):
+        from app.core.config import settings
+        delay = min(settings.retry_base_delay * (2 ** (10 - 1)), settings.retry_max_delay)
+        assert delay == settings.retry_max_delay

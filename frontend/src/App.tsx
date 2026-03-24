@@ -12,8 +12,7 @@ import { useJobs } from './hooks/useJobs'
 import { jobsApi } from './services/api'
 import type { CreateJobRequest } from './types'
 
-function Dashboard() {
-  const { logout } = useAuth()
+function Dashboard({ logout }: { logout: () => void }) {
   const { jobs, total, page, hasNext, nextPage, prevPage, refresh, error: jobsError } = useJobs()
   const [submitLoading, setSubmitLoading] = useState(false)
   const [notification, setNotification] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
@@ -32,7 +31,7 @@ function Dashboard() {
   }
 
   return (
-    <Layout username={localStorage.getItem('user_id')?.slice(0, 8) || 'User'} onLogout={logout}>
+    <Layout username={localStorage.getItem('username') || 'User'} onLogout={logout}>
       <ErrorNotification
         message={notification?.message || jobsError}
         type={notification?.type || 'error'}
@@ -44,7 +43,7 @@ function Dashboard() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-        className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.05)] grid grid-cols-1 lg:grid-cols-12 min-h-[600px] border border-outline-variant/10"
+        className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.05)] grid grid-cols-1 lg:grid-cols-12 lg:min-h-[600px] border border-outline-variant/10"
       >
         <JobForm onSubmit={handleCreateJob} loading={submitLoading} />
         <JobList
@@ -80,7 +79,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Dashboard />
+      <Dashboard logout={auth.logout} />
     </ErrorBoundary>
   )
 }

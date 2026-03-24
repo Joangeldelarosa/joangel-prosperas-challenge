@@ -12,7 +12,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: 0.4 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: 0.4 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -65,7 +65,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
   ];
 
   return (
-    <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="mt-4 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
       {cards.map((card, i) => (
         <motion.div
           key={card.label}
@@ -74,18 +74,18 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ jobs, total }) => {
           initial="hidden"
           animate="visible"
           whileHover={{ y: -4, transition: { duration: 0.2 } }}
-          className="bg-surface-container-lowest p-7 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-outline-variant/10 transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+          className="bg-surface-container-lowest p-4 sm:p-7 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-outline-variant/10 transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
         >
-          <div className="flex justify-between items-start mb-5">
-            <div className="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center">
-              <span className="material-symbols-outlined text-surface-tint text-[20px]">{card.icon}</span>
+          <div className="flex justify-between items-start mb-3 sm:mb-5">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface-container-low flex items-center justify-center">
+              <span className="material-symbols-outlined text-surface-tint text-[18px] sm:text-[20px]">{card.icon}</span>
             </div>
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${card.badgeColor}`}>
               {card.badge}
             </span>
           </div>
           <h3 className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-widest mb-1">{card.label}</h3>
-          <p className="text-3xl font-black text-on-surface tracking-tight">{card.value}</p>
+          <p className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight">{card.value}</p>
         </motion.div>
       ))}
     </div>

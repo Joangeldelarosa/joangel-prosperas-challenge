@@ -29,7 +29,25 @@ awslocal sqs create-queue \
   --attributes "{\"RedrivePolicy\":\"{\\\"deadLetterTargetArn\\\":\\\"$DLQ_ARN\\\",\\\"maxReceiveCount\\\":\\\"3\\\"}\"}" \
   --region "$REGION"
 
-echo "[SQS] Queues created:"
+echo "[SQS] Creating High-Priority Dead Letter Queue..."
+awslocal sqs create-queue \
+  --queue-name report-jobs-high-dlq \
+  --region "$REGION"
+
+HIGH_DLQ_ARN=$(awslocal sqs get-queue-attributes \
+  --queue-url "$ENDPOINT/000000000000/report-jobs-high-dlq" \
+  --attribute-names QueueArn \
+  --region "$REGION" \
+  --query 'Attributes.QueueArn' \
+  --output text)
+
+echo "[SQS] Creating High-Priority queue with redrive policy..."
+awslocal sqs create-queue \
+  --queue-name report-jobs-high \
+  --attributes "{\"RedrivePolicy\":\"{\\\"deadLetterTargetArn\\\":\\\"$HIGH_DLQ_ARN\\\",\\\"maxReceiveCount\\\":\\\"3\\\"}\"}" \
+  --region "$REGION"
+
+echo "[SQS] All queues created:"
 awslocal sqs list-queues --region "$REGION"
 
 # --- DynamoDB ---
