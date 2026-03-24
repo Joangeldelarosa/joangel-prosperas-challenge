@@ -75,8 +75,8 @@ describe('JobList', () => {
 
     expect(screen.getByText('Descargar')).toBeInTheDocument()
     expect(screen.getByText('Ver Log')).toBeInTheDocument()
-    expect(screen.getByText('Cancelar')).toBeInTheDocument()
-    expect(screen.getByText('Reintentar')).toBeInTheDocument()
+    expect(screen.getByText('En Cola')).toBeInTheDocument()
+    expect(screen.getByText('Ver Error')).toBeInTheDocument()
   })
 
   it('shows pagination info', () => {

@@ -55,6 +55,10 @@ export const jobsApi = {
     });
     return response.data;
   },
+  downloadUrl: (jobId: string): string => {
+    const token = localStorage.getItem('token');
+    return `${API_URL}/api/jobs/${jobId}/download?token=${token}`;
+  },
 };
 
 export default api;

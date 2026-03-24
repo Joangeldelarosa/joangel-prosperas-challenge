@@ -1,5 +1,10 @@
+import boto3
 from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import RedirectResponse
 
+from app.core.config import settings
+from app.core.database import _get_client_kwargs
+from app.core.exceptions import NotFoundError
 from app.core.security import get_current_user
 from app.models.schemas import CreateJobRequest, CreateJobResponse, JobListResponse, JobResponse
 from app.services.job_service import job_service
@@ -74,3 +79,39 @@ def list_jobs(
         per_page=result["per_page"],
         has_next=result["has_next"],
     )
+
+
+@router.get("/{job_id}/download")
+def download_job_result(
+    job_id: str,
+    token: str = Query(..., description="JWT token for authentication"),
+):
+    """Generate a presigned S3 URL and redirect to it for downloading the report."""
+    from app.core.security import decode_access_token
+
+    payload = decode_access_token(token)
+    user_id = payload.get("sub")
+    if not user_id:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    job = job_service.get_job(job_id=job_id, user_id=user_id)
+    if job.status != "COMPLETED" or not job.result_url:
+        raise NotFoundError("Report not available for download")
+
+    s3_client = boto3.client("s3", **_get_client_kwargs())
+
+    # Generate presigned URL with browser-accessible endpoint
+    client_kwargs = {"Bucket": settings.s3_bucket_name, "Key": job.result_url}
+    presigned_url = s3_client.generate_presigned_url(
+        "get_object", Params=client_kwargs, ExpiresIn=3600
+    )
+
+    # In local dev, replace internal Docker hostname with localhost
+    if settings.is_local and presigned_url:
+        presigned_url = presigned_url.replace(
+            "http://localstack:", "http://localhost:"
+        )
+
+    return RedirectResponse(url=presigned_url)

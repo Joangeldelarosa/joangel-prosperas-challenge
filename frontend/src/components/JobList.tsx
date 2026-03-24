@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Job } from '../types';
 import JobStatusBadge from './JobStatusBadge';
+import { jobsApi } from '../services/api';
 
 interface JobListProps {
   jobs: Job[];
@@ -113,11 +114,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, total, page, hasNext, onNextPag
 };
 
 const JobAction: React.FC<{ job: Job }> = ({ job }) => {
+  const [showDetails, setShowDetails] = useState(false);
+
   switch (job.status) {
     case 'COMPLETED':
       return (
         <a
-          href={job.result_url || '#'}
+          href={jobsApi.downloadUrl(job.job_id)}
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] font-black text-surface-tint uppercase tracking-widest hover:underline flex items-center justify-end ml-auto space-x-1"
@@ -128,23 +131,41 @@ const JobAction: React.FC<{ job: Job }> = ({ job }) => {
       );
     case 'PROCESSING':
       return (
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
-          <span>Ver Log</span>
-          <span className="material-symbols-outlined text-sm">terminal</span>
-        </span>
+        <div className="relative">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end ml-auto space-x-1 hover:text-surface-tint transition-colors"
+          >
+            <span>Ver Log</span>
+            <span className="material-symbols-outlined text-sm">terminal</span>
+          </button>
+          {showDetails && (
+            <div className="absolute right-0 top-8 z-10 bg-surface-container-lowest border border-outline-variant/20 rounded-lg p-4 shadow-lg w-64">
+              <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Procesando...</p>
+              <div className="space-y-1 text-[10px] text-slate-500">
+                <p>ID: <span className="font-mono">{job.job_id.slice(0, 16)}</span></p>
+                <p>Tipo: {job.report_type.replace(/_/g, ' ')}</p>
+                <p>Iniciado: {new Date(job.updated_at).toLocaleTimeString()}</p>
+              </div>
+              <div className="mt-3 w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                <div className="h-full bg-surface-tint rounded-full animate-pulse" style={{ width: '65%' }} />
+              </div>
+            </div>
+          )}
+        </div>
       );
     case 'PENDING':
       return (
-        <span className="text-[10px] font-black text-error uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
-          <span>Cancelar</span>
-          <span className="material-symbols-outlined text-sm">close</span>
+        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
+          <span>En Cola</span>
+          <span className="material-symbols-outlined text-sm">schedule</span>
         </span>
       );
     case 'FAILED':
       return (
-        <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
-          <span>Reintentar</span>
-          <span className="material-symbols-outlined text-sm">refresh</span>
+        <span className="text-[10px] font-black text-error uppercase tracking-widest flex items-center justify-end ml-auto space-x-1">
+          <span>Ver Error</span>
+          <span className="material-symbols-outlined text-sm">error_outline</span>
         </span>
       );
     default:

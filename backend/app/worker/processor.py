@@ -74,13 +74,9 @@ def process_job(
             ContentType="application/json",
         )
 
-        if settings.aws_endpoint_url:
-            result_url = f"{settings.aws_endpoint_url}/{settings.s3_bucket_name}/{s3_key}"
-        else:
-            result_url = f"https://{settings.s3_bucket_name}.s3.amazonaws.com/{s3_key}"
-
-        job_service.update_job_status(job_id, "COMPLETED", result_url=result_url)
-        logger.info("Job completed", extra={"job_id": job_id, "result_url": result_url})
+        # Store the S3 key — the API endpoint handles generating accessible URLs
+        job_service.update_job_status(job_id, "COMPLETED", result_url=s3_key)
+        logger.info("Job completed", extra={"job_id": job_id, "s3_key": s3_key})
 
     except Exception:
         logger.exception("Job processing failed", extra={"job_id": job_id})
